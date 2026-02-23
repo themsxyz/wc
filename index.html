@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
     <title>Western School</title>
-    <!-- Chart.js & html2pdf (optional) -->
+    <!-- Chart.js & pdfmake (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <style>
         * {
             margin: 0;
@@ -574,16 +575,7 @@
             const data = JSON.parse(saved);
             while (tbody.rows.length > 0) tbody.deleteRow(0);
             data.forEach(item => {
-                addSectionRow(item.name, item.default); // item.default একটি সংখ্যা, কিন্তু addSectionRow এখন ফাঁকা রাখবে? — আমরা চাই ডিফল্ট ইনপুটে সেই সংখ্যা বসুক।
-                // তবে addSectionRow-এ defaultVal প্যারামিটার এখন স্ট্রিং হিসেবে নেয়। আমরা যদি সংখ্যা পাঠাই, সেটা value তে বসবে।
-                // কিন্তু আমরা চাই ডিফল্ট ইনপুটে সংরক্ষিত মান (item.default) দেখাক। addSectionRow-এ defaultVal = item.default দিলে সেটি value-তে যাবে।
-                // খেয়াল: addSectionRow-এ defaultVal ডিফল্ট ''। যদি item.default 0 হয়, তাহলে 0 দেখাবে, কিন্তু আমরা চাই ফাঁকা? না, সংরক্ষিত ডাটা থেকে লোড করার সময় আসল মান দেখানো উচিত।
-                // তাই আমরা addSectionRow(item.name, item.default.toString()) করতে পারি, কিন্তু item.default সংখ্যা। আমরা চাই যদি item.default 0 হয়, তাহলে ইনপুট ফাঁকা না হয়ে 0 দেখাবে? 
-                // সংরক্ষিত ডাটাতে যদি default 0 থাকে, তবে লোডের পর 0 দেখানোই সঙ্গত। কিন্তু ব্যবহারকারী চেয়েছেন শুরুতে সব ফাঁকা থাকুক। লোডের ক্ষেত্রে সংরক্ষিত মান আসবে।
-                // এখানে আমরা addSectionRow কল করছি item.default দিয়ে, কিন্তু addSectionRow-এ defaultVal প্যারামিটার এখন স্ট্রিং হিসেবে গেলে value তে সেট হবে। 
-                // যেহেতু item.default একটি সংখ্যা (সংরক্ষিত), আমরা সেটাই value হিসেবে বসাব। তাই addSectionRow(item.name, item.default.toString()) করলে ভালো হয়।
-                // কিন্তু addSectionRow-এর ভিতরে আমরা value = defaultVal সেট করেছি, তাই ঠিক আছে।
-                // তবে item.default 0 হলে সেটি "0" স্ট্রিং হয়ে যাবে, কিন্তু ইনপুটে 0 দেখাবে – এটি কাঙ্ক্ষিত কারণ সংরক্ষিত অবস্থায় 0 ছিল।
+                addSectionRow(item.name, item.default.toString());
             });
             // এখন প্রতিটি সারির month state পুনরুদ্ধার
             const newRows = tbody.rows;
@@ -663,18 +655,122 @@
         URL.revokeObjectURL(link.href);
     }
 
-    // ----- PDF জেনারেট -----
+    // ----- নতুন PDF জেনারেট (ট্রান্সপোজড ফরম্যাট) -----
     function generatePDF() {
-        const element = document.getElementById('budgetTable');
-        if (!element) return;
-        const opt = {
-            margin:        [0.5, 0.5, 0.5, 0.5],
-            filename:     'budget_sheet.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, letterRendering: true, useCORS: true },
-            jsPDF:        { unit: 'in', format: 'a2', orientation: 'landscape' }
+        calculateAll();
+
+        const year = document.getElementById('runningYear').value || 'N/A';
+        const mainBudget = parseFloat(document.getElementById('mainBudget').value) || 0;
+
+        const monthsEnglish = [
+            "January","February","March","April","May","June",
+            "July","August","September","October","November","December"
+        ];
+
+        const rows = tbody.rows;
+        const sections = [];
+        let extraSectionCounter = 0;
+
+        // Fetch section data
+        for (let r = 0; r < rows.length; r++) {
+            let sectionName = rows[r].cells[0].textContent.trim();
+            let isDefault = false;
+            switch(sectionName){
+                case 'ঘর ভাড়া': sectionName = 'Rent'; isDefault = true; break;
+                case 'ইলেক্ট্রিক বিল': sectionName = 'Electric Bill'; isDefault = true; break;
+                case 'ওয়াইফাই বিল': sectionName = 'WiFi'; isDefault = true; break;
+                case 'নাস্তা বিল': sectionName = 'Snacks'; isDefault = true; break;
+                case 'প্রকাশনা বিল': sectionName = 'Publication'; isDefault = true; break;
+                case 'স্টেশনারি বিল': sectionName = 'Stationery'; isDefault = true; break;
+                case 'বই বিল': sectionName = 'Books'; isDefault = true; break;
+                case 'শিক্ষক বেতন': sectionName = 'Teacher Salary'; isDefault = true; break;
+                case 'loan': sectionName = 'Loan'; isDefault = true; break;
+                default: 
+                    isDefault = false;
+                    sectionName = String.fromCharCode(65 + extraSectionCounter);
+                    extraSectionCounter++;
+            }
+
+            const monthCells = rows[r].querySelectorAll('.month-cell');
+            const monthlyValues = [];
+            for (let m = 0; m < 12; m++) {
+                const container = monthCells[m];
+                const checkbox = container.querySelector('.month-checkbox');
+                const inp = container.querySelector('.month-input');
+                let val = 0;
+                if (checkbox.checked) {
+                    val = parseFloat(rows[r].querySelector('.default-input').value) || 0;
+                } else {
+                    const raw = inp.value.trim();
+                    if(raw) {
+                        const parts = raw.split(/\s+/);
+                        for(let p of parts){
+                            const num = parseFloat(p);
+                            if(!isNaN(num)) val += num;
+                        }
+                    }
+                }
+                monthlyValues.push(val);
+            }
+
+            sections.push({ name: sectionName, monthly: monthlyValues });
+        }
+
+        // Build table in transposed format (rows=sections, columns=months)
+        const tableBody = [];
+        const headerRow = ['Section Name', ...monthsEnglish, 'Section Total'];
+        tableBody.push(headerRow);
+
+        sections.forEach(sec => {
+            const secRow = [sec.name];
+            const secTotal = sec.monthly.reduce((a,b)=>a+b,0);
+            sec.monthly.forEach(val => secRow.push(val.toFixed(2)));
+            secRow.push(secTotal.toFixed(2));
+            tableBody.push(secRow);
+        });
+
+        // Monthly total row
+        const monthlyTotalsRow = ['Monthly Total'];
+        for (let m = 0; m < 12; m++) {
+            const monthTotal = sections.reduce((sum, sec) => sum + sec.monthly[m], 0);
+            monthlyTotalsRow.push(monthTotal.toFixed(2));
+        }
+        const totalYearly = sections.reduce((sum, sec) => sum + sec.monthly.reduce((a,b)=>a+b,0),0);
+        monthlyTotalsRow.push(totalYearly.toFixed(2));
+        tableBody.push(monthlyTotalsRow);
+
+        const remaining = mainBudget - totalYearly;
+        const status = mainBudget > 0 ? ((totalYearly / mainBudget) * 100).toFixed(2) + '%' : 'N/A';
+
+        const docDefinition = {
+            pageSize: 'A4',
+            pageOrientation: 'landscape',
+            pageMargins: [20, 40, 20, 40],
+            footer: function(currentPage, pageCount){
+                return { text: 'Page ' + currentPage + ' of ' + pageCount, alignment: 'center', margin:[0,10,0,0] };
+            },
+            content: [
+                { text: 'Investment Report', style: 'header', alignment: 'center', margin:[0,0,0,10] },
+                { text: `Year: ${year}    Main Budget: ${mainBudget.toFixed(2)}`, bold:true, margin:[0,0,0,5] },
+                { text: `Total Yearly Investment: ${totalYearly.toFixed(2)}    Remaining Money: ${remaining.toFixed(2)}    Status: ${status}`, bold:true, margin:[0,0,0,10] },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: Array(14).fill('*'),
+                        body: tableBody
+                    },
+                    layout: {
+                        hLineWidth: ()=>1,
+                        vLineWidth: ()=>1,
+                        hLineColor: ()=>'black',
+                        vLineColor: ()=>'black'
+                    }
+                }
+            ],
+            defaultStyle: { fontSize: 10 }
         };
-        html2pdf().set(opt).from(element).save();
+
+        pdfMake.createPdf(docDefinition).download(`Investment_Report_${year}.pdf`);
     }
 
     // ----- পৃষ্ঠা লোড -----
