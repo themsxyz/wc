@@ -1,44 +1,9 @@
-<!DOCTYPE html> <html lang="bn">
+<!DOCTYPE html>
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
-
-    <!-- Primary SEO Title -->
-    <title>Western School Investment Calculate Dashboard | Annual Budget & Monthly Cost Calculator</title>
-
-    <!-- Meta Description -->
-    <meta name="description" content="Western School Investment Calculate Dashboard - Easily calculate yearly and monthly expenses, track total investment, and compare with main budget. Smart annual budget management system with detailed section-wise reporting.">
-
-    <!-- Keywords -->
-    <meta name="keywords" content="western school investment calculate dashboard, school investment calculator, annual budget calculator, monthly expense tracker, school financial dashboard, budget management system">
-
-    <!-- Author -->
-    <meta name="author" content="Western School">
-
-    <!-- Robots -->
-    <meta name="robots" content="index, follow">
-
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://yourwebsite.com/">
-
-    <!-- Open Graph (Facebook & Social Media) -->
-    <meta property="og:title" content="Western School Investment Calculate Dashboard">
-    <meta property="og:description" content="Calculate yearly and monthly school investment easily. Track total cost, compare with main budget and get detailed section-wise financial report.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://yourwebsite.com/">
-    <meta property="og:image" content="https://yourwebsite.com/preview-image.jpg">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Western School Investment Dashboard">
-    <meta name="twitter:description" content="Smart school budget & investment calculation system.">
-    <meta name="twitter:image" content="https://yourwebsite.com/preview-image.jpg">
-
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#0f172a">
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="favicon.png">
+    <title>বার্ষিক বাজেট · বহু খরচ ইনপুট</title>
     <!-- Chart.js & html2pdf (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -75,24 +40,25 @@
             color: #0b3954;
             font-weight: 600;
             font-size: 2.1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .input-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffffdd;
+            padding: 1rem 1.8rem;
+            border-radius: 3rem;
             margin-bottom: 1.5rem;
         }
 
-        /* ===== হেডার এলাকা ===== */
-        .header-panel {
-            background: #ffffffdd;
-            border-radius: 3rem;
-            padding: 1.2rem 1.8rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 20px rgba(0,30,50,0.1);
-        }
-
-        .header-row {
+        .year-budget {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem 1.8rem;
-            align-items: center;
-            justify-content: flex-start;
+            gap: 1.5rem;
         }
 
         .input-group {
@@ -117,44 +83,22 @@
             font-size: 1rem;
             border-radius: 30px;
             background: #f0f7fe;
-            width: 130px;
+            width: 150px;
             text-align: center;
             outline: none;
         }
         .input-group input:focus { outline: 2px solid #2a86c7; background: white; }
-
-        .section-adder {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .section-adder input {
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 40px;
-            background: white;
-            border: 1px solid #9bc6de;
-            width: 200px;
-        }
-
-        .save-load {
-            display: flex;
-            gap: 0.5rem;
-            margin-left: auto;
-            flex-wrap: wrap;
-        }
 
         button {
             background: #1e6b9b;
             border: none;
             color: white;
             font-weight: 600;
-            padding: 0.6rem 1.2rem;
+            padding: 0.7rem 1.5rem;
             border-radius: 40px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             cursor: pointer;
-            box-shadow: 0 8px 12px -5px #1e6b9b80;
+            box-shadow: 0 10px 15px -5px #1e6b9b80;
             transition: 0.15s;
             display: inline-flex;
             align-items: center;
@@ -163,10 +107,33 @@
         }
         button:hover { background: #13507a; transform: scale(1.02); }
         button.secondary { background: #3f8db3; }
+        button.small { padding: 0.2rem 0.8rem; font-size: 0.8rem; margin-left: 0.2rem; }
+
+        .action-group { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+
+        .add-section-area {
+            display: flex;
+            gap: 0.7rem;
+            flex-wrap: wrap;
+            align-items: center;
+            background: #dbeefb;
+            padding: 1rem 1.8rem;
+            border-radius: 50px;
+            margin: 1rem 0;
+        }
+        .add-section-area input {
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 40px;
+            flex: 1 1 250px;
+            font-size: 1rem;
+            background: white;
+            border: 1px solid #9bc6de;
+        }
 
         .table-wrapper {
             overflow-x: auto;
-            margin: 1.5rem 0 1.8rem;
+            margin: 1.8rem 0 2rem;
             border-radius: 2rem;
             background: white;
             box-shadow: 0 15px 30px #0000001a;
@@ -258,15 +225,6 @@
             border-top: 3px solid #4287b0;
         }
 
-        /* ===== অ্যাকশন বার (টেবিলের নিচে) ===== */
-        .action-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
-            margin: 2rem 0 1.5rem;
-        }
-
         .summary-cards {
             display: flex;
             flex-wrap: wrap;
@@ -301,42 +259,29 @@
 </head>
 <body>
 <div class="app-container">
-    <h1>📋 বাজেট ট্র্যাকার · প্রিন্ট ও শিট এক্সপোর্ট</h1>
+    <h1>📋 বাজেট ট্র্যাকার · বহু খরচ (স্পেস দিন)</h1>
 
-    <!-- হেডার: বছর, বাজেট, সেকশন যোগ, সংরক্ষণ বাটন -->
-    <div class="header-panel">
-        <div class="header-row">
-            <div class="input-group">
-                <label>চলতি বছর:</label>
-                <input type="number" id="runningYear" value="2025">
-            </div>
-            <div class="input-group">
-                <label>মূল বাজেট:</label>
-                <input type="number" id="mainBudget" value="500000">
-            </div>
-            <div class="section-adder">
-                <input type="text" id="newSectionName" placeholder="নতুন খাত" value="অন্যান্য">
-                <button id="addSectionBtn" class="secondary">➕ খাত যোগ</button>
-            </div>
-            <div class="save-load">
-                <button id="saveLocalBtn">💾 সংরক্ষণ</button>
-                <button id="loadLocalBtn">↩️ পুনরুদ্ধার</button>
-            </div>
+    <div class="input-panel">
+        <div class="year-budget">
+            <div class="input-group"><label>চলতি বছর:</label><input type="number" id="runningYear" value="2025"></div>
+            <div class="input-group"><label>মূল বাজেট:</label><input type="number" id="mainBudget" value="500000"></div>
+        </div>
+        <div class="action-group">
+            <button id="resultBtn">📊 ফলাফল দেখুন</button>
+            <button id="pdfBtn" class="secondary">📇 PDF তৈরি</button>
         </div>
     </div>
 
-    <!-- টেবিল (ডায়নামিক) -->
-    <div class="table-wrapper" id="tableWrapper"></div>
-
-    <!-- অ্যাকশন বার: ফলাফল, PDF, CSV, Google Sheet (টেবিলের পর) -->
-    <div class="action-bar">
-        <button id="resultBtn">📊 ফলাফল দেখুন</button>
-        <button id="pdfBtn" class="secondary">📇 PDF (A4 Landscape)</button>
-        <button id="exportCsvBtn" class="secondary">📥 CSV এক্সপোর্ট</button>
-        <button id="googleSheetBtn" class="secondary">📗 Google Sheet</button>
+    <div class="add-section-area">
+        <input type="text" id="newSectionName" placeholder="নতুন খাতের নাম" value="অন্যান্য">
+        <button id="addSectionBtn" class="secondary">➕ খাত যোগ</button>
+        <button id="saveLocalBtn">💾 সংরক্ষণ</button>
+        <button id="loadLocalBtn">↩️ পুনরুদ্ধার</button>
+        <button id="exportCsvBtn">📥 CSV এক্সপোর্ট</button>
     </div>
 
-    <!-- সারাংশ কার্ড ও চার্ট (আগের মত) -->
+    <div class="table-wrapper" id="tableWrapper"></div>
+
     <div class="summary-cards" id="summaryCards">
         <div class="card" style="border-left-color:#2a7faa;"><div class="label">📅 মোট বার্ষিক ব্যয়</div><div class="value" id="totalYearlyDisplay">০</div></div>
         <div class="card" style="border-left-color:#e68c2e;"><div class="label">💰 মূল বাজেট</div><div class="value" id="mainBudgetDisplay">০</div></div>
@@ -346,7 +291,7 @@
     <div id="warningArea" class="warning" style="display: none;">⚠️ সতর্কতা: ব্যয় বাজেট ছাড়িয়ে গেছে!</div>
 
     <div class="chart-container"><canvas id="budgetChart" width="300" height="300"></canvas></div>
-    <footer><span style="color:#1e5e86;">✅ স্পেস দিয়ে একাধিক খরচ: ১০০ ৬০০ ৮০০ → স্বয়ংক্রিয় যোগ</span></footer>
+    <footer><span style="color:#1e5e86;">✅ প্রতি মাসে স্পেস দিয়ে একাধিক খরচ লিখুন (যেমন: ১০০ ৬০০ ৮০০) – স্বয়ংক্রিয় যোগ হবে</span></footer>
 </div>
 
 <script>
@@ -452,11 +397,11 @@
             checkbox.dataset.month = m;
 
             const inp = document.createElement('input');
-            inp.type = 'text';
+            inp.type = 'text';        // টেক্সট ইনপুট, যাতে স্পেস দেওয়া যায়
             inp.placeholder = '০';
             inp.classList.add('month-input');
             inp.dataset.month = m;
-            inp.dataset.custom = '';
+            inp.dataset.custom = '';   // কাস্টম মান সংরক্ষণের জন্য
 
             container.appendChild(checkbox);
             container.appendChild(inp);
@@ -468,11 +413,13 @@
             checkbox.addEventListener('change', function(e) {
                 const rowDef = parseFloat(defInput.value) || 0;
                 if (this.checked) {
+                    // বর্তমান ইনপুটের মান সংরক্ষণ করি (যদি কিছু থাকে)
                     inp.dataset.custom = inp.value;
                     inp.value = rowDef.toString();
                     inp.disabled = true;
                 } else {
                     inp.disabled = false;
+                    // আগের কাস্টম মান ফিরিয়ে দিই (যদি থাকে)
                     if (inp.dataset.custom && inp.dataset.custom !== '') {
                         inp.value = inp.dataset.custom;
                     } else {
@@ -487,11 +434,13 @@
             const rowDef = parseFloat(defInput.value) || 0;
             monthCells.forEach(({ checkbox, inp }) => {
                 if (!checkbox.checked) {
+                    // সংরক্ষণ করি বর্তমান কাস্টম মান
                     inp.dataset.custom = inp.value;
                     checkbox.checked = true;
                     inp.value = rowDef.toString();
                     inp.disabled = true;
                 } else {
+                    // ইতিমধ্যে চেক করা থাকলেও মান আপডেট করি
                     inp.value = rowDef.toString();
                 }
             });
@@ -531,6 +480,7 @@
                 if (checkbox.checked) {
                     val = defaultVal;
                 } else {
+                    // স্পেস-বিভক্ত সংখ্যা পার্স করে যোগ
                     val = sumOfSpaceString(inp.value);
                 }
                 rowSum += val;
@@ -539,11 +489,13 @@
                 if (val !== 0) paidMonths++;
             });
 
+            // মোট কলাম
             const cells = row.cells;
             const totalCell = cells[cells.length - 1];
             totalCell.textContent = rowSum.toFixed(2) + ` (${paidMonths} মাস)`;
         }
 
+        // মাস মোট পদতলে
         for (let m = 0; m < 12; m++) {
             const footCell = document.getElementById(`monthTotal${m}`);
             if (footCell) footCell.textContent = monthSums[m].toFixed(2);
@@ -589,7 +541,7 @@
         });
     }
 
-    // ----- লোকাল স্টোরেজ -----
+    // ----- লোকাল স্টোরেজ (স্ট্রিং সংরক্ষণ) -----
     function saveToLocal() {
         const rows = tbody.rows;
         const data = [];
@@ -605,8 +557,8 @@
                 const inp = cell.querySelector('.month-input');
                 monthsData.push({
                     useDefault: checkbox.checked,
-                    rawString: inp.value,
-                    savedCustom: inp.dataset.custom || ''
+                    rawString: inp.value,                // মূল স্ট্রিং
+                    savedCustom: inp.dataset.custom || '' // পূর্বের কাস্টম স্ট্রিং
                 });
             });
             data.push({ name, default: defVal, months: monthsData });
@@ -634,7 +586,9 @@
                         inp.value = mData.rawString;
                         inp.dataset.custom = mData.savedCustom || '';
                         inp.disabled = mData.useDefault;
+                        // যদি চেক করা থাকে, ডিফল্ট মান বসানো প্রয়োজন (কিন্তু rawString ই ডিফল্ট হবে? নিশ্চিত করতে পারি)
                         if (mData.useDefault) {
+                            // ডিফল্ট ইনপুটের মান দিয়ে ওভাররাইড করা ভাল
                             const defVal = parseFloat(defInput.value) || 0;
                             inp.value = defVal.toString();
                         }
@@ -646,8 +600,8 @@
         } catch (e) { alert('ডাটা দুর্নীতিগ্রস্ত'); }
     }
 
-    // ----- CSV এক্সপোর্ট (সাধারণ) -----
-    function exportToCsv(filename = 'bajet_report.csv') {
+    // ----- CSV এক্সপোর্ট (প্রতি মাসের কাঁচা স্ট্রিং সহ) -----
+    function exportToCsv() {
         const rows = tbody.rows;
         if (!rows.length) return;
         let csv = 'খাতের নাম,ডিফল্ট,';
@@ -666,7 +620,7 @@
             monthCells.forEach(cell => {
                 const checkbox = cell.querySelector('.month-checkbox');
                 const inp = cell.querySelector('.month-input');
-                const raw = inp.value.replace(/,/g, ';');
+                const raw = inp.value.replace(/,/g, ';'); // CSV-তে কমা সমস্যা এড়াতে
                 let actualVal;
                 if (checkbox.checked) {
                     actualVal = defVal;
@@ -681,6 +635,7 @@
             csv += line + '\n';
         }
 
+        // মাস মোট (সংখ্যা)
         const monthTotals = [];
         for (let m = 0; m < 12; m++) {
             const footCell = document.getElementById(`monthTotal${m}`);
@@ -691,17 +646,12 @@
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = filename;
+        link.download = 'bajet_report.csv';
         link.click();
         URL.revokeObjectURL(link.href);
     }
 
-    // ----- Google Sheet-এর জন্য আলাদা বাটন (শুধু filename আলাদা) -----
-    function exportToGoogleSheet() {
-        exportToCsv('budget_google_sheet.csv');
-    }
-
-   // ----- PDF জেনারেট -----
+    // ----- PDF জেনারেট -----
     function generatePDF() {
         const element = document.getElementById('budgetTable');
         if (!element) return;
@@ -722,9 +672,6 @@
 
         document.getElementById('resultBtn').addEventListener('click', calculateAll);
         document.getElementById('pdfBtn').addEventListener('click', generatePDF);
-        document.getElementById('exportCsvBtn').addEventListener('click', () => exportToCsv());
-        document.getElementById('googleSheetBtn').addEventListener('click', exportToGoogleSheet);
-
         document.getElementById('addSectionBtn').addEventListener('click', () => {
             const inputField = document.getElementById('newSectionName');
             let newName = inputField.value.trim();
@@ -732,9 +679,9 @@
             addSectionRow(newName, 0);
             inputField.value = '';
         });
-
         document.getElementById('saveLocalBtn').addEventListener('click', saveToLocal);
         document.getElementById('loadLocalBtn').addEventListener('click', loadFromLocal);
+        document.getElementById('exportCsvBtn').addEventListener('click', exportToCsv);
 
         calculateAll();
     });
