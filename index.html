@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
-    <title>বার্ষিক বাজেট · বহু খরচ ইনপুট</title>
+    <title>Western School</title>
     <!-- Chart.js & html2pdf (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -264,34 +264,33 @@
     <div class="input-panel">
         <div class="year-budget">
             <div class="input-group"><label>চলতি বছর:</label><input type="number" id="runningYear" value="2025"></div>
-            <div class="input-group"><label>মূল বাজেট:</label><input type="number" id="mainBudget" value="500000"></div>
+            <div class="input-group"><label>বাজেট:</label><input type="number" id="mainBudget" value="500000"></div>
         </div>
         <div class="action-group">
-            <button id="resultBtn">📊 ফলাফল দেখুন</button>
-            <button id="pdfBtn" class="secondary">📇 PDF তৈরি</button>
+            <button id="resultBtn">📊 ফলাফল </button>
+            <button id="pdfBtn" class="secondary">📇 PDf</button>
         </div>
     </div>
 
     <div class="add-section-area">
         <input type="text" id="newSectionName" placeholder="নতুন খাতের নাম" value="অন্যান্য">
         <button id="addSectionBtn" class="secondary">➕ খাত যোগ</button>
-        <button id="saveLocalBtn">💾 সংরক্ষণ</button>
-        <button id="loadLocalBtn">↩️ পুনরুদ্ধার</button>
-        <button id="exportCsvBtn">📥 CSV এক্সপোর্ট</button>
+        <button id="saveLocalBtn">💾 Save</button>
+        <button id="loadLocalBtn">↩️ Reset</button>
+        <button id="exportCsvBtn">📥 CSV</button>
     </div>
 
     <div class="table-wrapper" id="tableWrapper"></div>
 
     <div class="summary-cards" id="summaryCards">
-        <div class="card" style="border-left-color:#2a7faa;"><div class="label">📅 মোট বার্ষিক ব্যয়</div><div class="value" id="totalYearlyDisplay">০</div></div>
-        <div class="card" style="border-left-color:#e68c2e;"><div class="label">💰 মূল বাজেট</div><div class="value" id="mainBudgetDisplay">০</div></div>
+        <div class="card" style="border-left-color:#2a7faa;"><div class="label">📅 মোট ব্যয়</div><div class="value" id="totalYearlyDisplay">০</div></div>
+        <div class="card" style="border-left-color:#e68c2e;"><div class="label">💰 বাজেট</div><div class="value" id="mainBudgetDisplay">০</div></div>
         <div class="card" style="border-left-color:#4caf7a;"><div class="label">✨ উদ্বৃত্ত</div><div class="value" id="remainingDisplay">০</div></div>
         <div class="card" style="border-left-color:#bf4b4b;"><div class="label">📈 ব্যবহৃত %</div><div class="value" id="percentDisplay">০%</div></div>
     </div>
     <div id="warningArea" class="warning" style="display: none;">⚠️ সতর্কতা: ব্যয় বাজেট ছাড়িয়ে গেছে!</div>
 
     <div class="chart-container"><canvas id="budgetChart" width="300" height="300"></canvas></div>
-    <footer><span style="color:#1e5e86;">✅ প্রতি মাসে স্পেস দিয়ে একাধিক খরচ লিখুন (যেমন: ১০০ ৬০০ ৮০০) – স্বয়ংক্রিয় যোগ হবে</span></footer>
 </div>
 
 <script>
