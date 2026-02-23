@@ -655,7 +655,7 @@
         URL.revokeObjectURL(link.href);
     }
 
-    // ----- নতুন PDF জেনারেট (ট্রান্সপোজড ফরম্যাট) -----
+    // ----- নতুন PDF জেনারেট (দুই ভাগে মাস, প্যাজিনেশন, ছোট ফন্ট) -----
     function generatePDF() {
         calculateAll();
 
@@ -687,7 +687,7 @@
                 case 'loan': sectionName = 'Loan'; isDefault = true; break;
                 default: 
                     isDefault = false;
-                    sectionName = String.fromCharCode(65 + extraSectionCounter);
+                    sectionName = String.fromCharCode(65 + extraSectionCounter); // A,B,C...
                     extraSectionCounter++;
             }
 
@@ -716,58 +716,84 @@
             sections.push({ name: sectionName, monthly: monthlyValues });
         }
 
-        // Build table in transposed format (rows=sections, columns=months)
-        const tableBody = [];
-        const headerRow = ['Section Name', ...monthsEnglish, 'Section Total'];
-        tableBody.push(headerRow);
+        const totalYearlyInvestment = sections.reduce((sum, sec) => sum + sec.monthly.reduce((a,b)=>a+b,0),0);
+        const remaining = mainBudget - totalYearlyInvestment;
+        const status = mainBudget > 0 ? (totalYearlyInvestment / mainBudget * 100).toFixed(2) + '%' : 'N/A';
 
-        sections.forEach(sec => {
-            const secRow = [sec.name];
-            const secTotal = sec.monthly.reduce((a,b)=>a+b,0);
-            sec.monthly.forEach(val => secRow.push(val.toFixed(2)));
-            secRow.push(secTotal.toFixed(2));
-            tableBody.push(secRow);
+        // Split months in 2 parts: 0-5, 6-11
+        const monthChunks = [
+            { start: 0, end: 5 },
+            { start: 6, end: 11 }
+        ];
+
+        const content = [];
+
+        monthChunks.forEach((chunk, chunkIndex) => {
+            // Split sections per page (~25 rows per page)
+            const pageSize = 25;
+            for (let i = 0; i < sections.length; i += pageSize) {
+                const secChunk = sections.slice(i, i + pageSize);
+
+                // Build table body for this chunk
+                const tableBody = [];
+                const headerRow = ['Section Name', ...monthsEnglish.slice(chunk.start, chunk.end + 1), 'Section Total'];
+                tableBody.push(headerRow);
+
+                secChunk.forEach(sec => {
+                    const secRow = [sec.name];
+                    const secTotal = sec.monthly.slice(chunk.start, chunk.end + 1).reduce((a,b)=>a+b,0);
+                    sec.monthly.slice(chunk.start, chunk.end + 1).forEach(val => secRow.push(val.toFixed(2)));
+                    secRow.push(secTotal.toFixed(2));
+                    tableBody.push(secRow);
+                });
+
+                // Monthly total for this chunk
+                const monthlyTotalsRow = ['Monthly Total'];
+                for (let m = chunk.start; m <= chunk.end; m++) {
+                    const monthTotal = secChunk.reduce((sum, sec) => sum + sec.monthly[m], 0);
+                    monthlyTotalsRow.push(monthTotal.toFixed(2));
+                }
+                const chunkTotal = secChunk.reduce((sum, sec) => sum + sec.monthly.slice(chunk.start, chunk.end + 1).reduce((a,b)=>a+b,0),0);
+                monthlyTotalsRow.push(chunkTotal.toFixed(2));
+                tableBody.push(monthlyTotalsRow);
+
+                // Add header info only on first table per month chunk
+                if(i === 0 && chunkIndex === 0){
+                    content.push(
+                        { text: 'Investment Report', style: 'header', alignment: 'center', margin:[0,0,0,10] },
+                        { text: `Year: ${year}    Main Budget: ${mainBudget.toFixed(2)}`, bold:true, margin:[0,0,0,5] },
+                        { text: `Total Yearly Investment: ${totalYearlyInvestment.toFixed(2)}    Remaining Money: ${remaining.toFixed(2)}    Status: ${status}`, bold:true, margin:[0,0,0,10] }
+                    );
+                } else {
+                    content.push({ text: '', pageBreak: 'before' });
+                }
+
+                content.push({
+                    table: {
+                        headerRows: 1,
+                        widths: Array(headerRow.length).fill('*'),
+                        body: tableBody
+                    },
+                    layout: {
+                        hLineWidth: ()=>0.5,
+                        vLineWidth: ()=>0.5,
+                        hLineColor: ()=>'black',
+                        vLineColor: ()=>'black'
+                    },
+                    fontSize: 8 // smaller font
+                });
+            }
         });
-
-        // Monthly total row
-        const monthlyTotalsRow = ['Monthly Total'];
-        for (let m = 0; m < 12; m++) {
-            const monthTotal = sections.reduce((sum, sec) => sum + sec.monthly[m], 0);
-            monthlyTotalsRow.push(monthTotal.toFixed(2));
-        }
-        const totalYearly = sections.reduce((sum, sec) => sum + sec.monthly.reduce((a,b)=>a+b,0),0);
-        monthlyTotalsRow.push(totalYearly.toFixed(2));
-        tableBody.push(monthlyTotalsRow);
-
-        const remaining = mainBudget - totalYearly;
-        const status = mainBudget > 0 ? ((totalYearly / mainBudget) * 100).toFixed(2) + '%' : 'N/A';
 
         const docDefinition = {
             pageSize: 'A4',
             pageOrientation: 'landscape',
-            pageMargins: [20, 40, 20, 40],
+            pageMargins: [15, 20, 15, 20], // smaller side margins
             footer: function(currentPage, pageCount){
                 return { text: 'Page ' + currentPage + ' of ' + pageCount, alignment: 'center', margin:[0,10,0,0] };
             },
-            content: [
-                { text: 'Investment Report', style: 'header', alignment: 'center', margin:[0,0,0,10] },
-                { text: `Year: ${year}    Main Budget: ${mainBudget.toFixed(2)}`, bold:true, margin:[0,0,0,5] },
-                { text: `Total Yearly Investment: ${totalYearly.toFixed(2)}    Remaining Money: ${remaining.toFixed(2)}    Status: ${status}`, bold:true, margin:[0,0,0,10] },
-                {
-                    table: {
-                        headerRows: 1,
-                        widths: Array(14).fill('*'),
-                        body: tableBody
-                    },
-                    layout: {
-                        hLineWidth: ()=>1,
-                        vLineWidth: ()=>1,
-                        hLineColor: ()=>'black',
-                        vLineColor: ()=>'black'
-                    }
-                }
-            ],
-            defaultStyle: { fontSize: 10 }
+            content: content,
+            defaultStyle: { fontSize: 8 } // smaller font globally
         };
 
         pdfMake.createPdf(docDefinition).download(`Investment_Report_${year}.pdf`);
