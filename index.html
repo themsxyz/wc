@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
     <title>Western School</title>
-    <!-- Chart.js & pdfmake (optional) -->
+    <!-- Chart.js & pdfmake -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
@@ -136,10 +136,13 @@
 
         .table-wrapper {
             overflow-x: auto;
+            overflow-y: auto;
             margin: 1.8rem 0 2rem;
             border-radius: 2rem;
             background: white;
             box-shadow: 0 15px 30px #0000001a;
+            max-height: 70vh;
+            position: relative;
         }
 
         table {
@@ -156,6 +159,17 @@
             text-align: center;
             border-right: 1px solid #30759c;
             white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        th:first-child {
+            left: 0;
+            z-index: 30;
+        }
+        th:nth-child(2) {
+            left: 150px;
+            z-index: 25;
         }
         th:last-child { border-right: none; }
 
@@ -175,6 +189,10 @@
             padding: 0 0.6rem;
             white-space: nowrap;
             border-right: 2px solid #b1d2e8;
+            position: sticky;
+            left: 0;
+            background: #e4f0f9;
+            z-index: 10;
         }
         .default-input {
             width: 80px;
@@ -259,6 +277,50 @@
             border: 2px solid #ff9f4b;
         }
         .chart-container { max-width: 350px; margin: 2rem auto; background: white; padding: 1.5rem; border-radius: 2rem; }
+        .action-after-table {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0 0.5rem;
+        }
+
+        /* Section-wise totals */
+        .section-totals-area {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f8fbfe;
+            border-radius: 2rem;
+            box-shadow: 0 10px 20px #0000000d;
+        }
+        .section-totals-area h3 {
+            color: #0b3954;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+        .totals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .total-item {
+            background: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 10px #0000000a;
+            border-left: 5px solid #2a7faa;
+        }
+        .total-item .sec-name {
+            font-weight: 600;
+            color: #043753;
+        }
+        .total-item .sec-amount {
+            font-weight: 700;
+            color: #1e6b9b;
+            font-size: 1.2rem;
+        }
         footer { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 2rem; }
     </style>
 </head>
@@ -271,10 +333,7 @@
             <div class="input-group"><label>চলতি বছর:</label><input type="number" id="runningYear" placeholder="0"></div>
             <div class="input-group"><label>বাজেট:</label><input type="number" id="mainBudget" placeholder="0"></div>
         </div>
-        <div class="action-group">
-            <button id="resultBtn">📊 ফলাফল </button>
-            <button id="pdfBtn" class="secondary">📇 PDf</button>
-        </div>
+        <div class="action-group" style="visibility: hidden; display: none;"></div>
     </div>
 
     <div class="add-section-area">
@@ -282,10 +341,14 @@
         <button id="addSectionBtn" class="secondary">➕ খাত যোগ</button>
         <button id="saveLocalBtn">💾 সেভ </button>
         <button id="loadLocalBtn">↩️ রিসেট </button>
-        <button id="exportCsvBtn">📥 CSV</button>
     </div>
 
     <div class="table-wrapper" id="tableWrapper"></div>
+
+    <div class="action-after-table">
+        <button id="resultBtn">📊 ফলাফল </button>
+        <button id="pdfBtn" class="secondary">📇 PDF</button>
+    </div>
 
     <div class="summary-cards" id="summaryCards">
         <div class="card" style="border-left-color:#2a7faa;"><div class="label">📅 মোট ব্যয়</div><div class="value" id="totalYearlyDisplay">০</div></div>
@@ -295,6 +358,12 @@
     </div>
     <div id="warningArea" class="warning" style="display: none;">⚠️ সতর্কতা: ব্যয় বাজেট ছাড়িয়ে গেছে!</div>
 
+    <!-- Section-wise totals (updated on result) -->
+    <div class="section-totals-area" id="sectionTotalsArea">
+        <h3>📋 খাতওয়ারী মোট (বার্ষিক)</h3>
+        <div id="sectionTotalsGrid" class="totals-grid"></div>
+    </div>
+
     <div class="chart-container"><canvas id="budgetChart" width="300" height="300"></canvas></div>
 </div>
 
@@ -302,22 +371,29 @@
 (function() {
     const monthsBangla = ['জানুয়ারী','ফেব্রুয়ারী','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
 
+    // Updated default sections
     const defaultSections = [
         'ঘর ভাড়া',
         'ইলেক্ট্রিক বিল',
         'ওয়াইফাই বিল',
-        'নাস্তা বিল',
+        'নাস্তা বিল ও অভিভাবক সমাবেশ',
         'প্রকাশনা বিল',
         'স্টেশনারি বিল',
-        'বই বিল',
         'শিক্ষক বেতন',
-        'loan'
+        'loan',
+        'আইটি বিল',
+        'ইলেকট্রিক ও ইলেক্ট্রনিক বিল',
+        'annual sports and class party',
+        'AGM',
+        'কমিটি বৈঠক ও Audit',
+        'আইডি কার্ড',
+        'বই ক্রয়'
     ];
 
     let tbody, table;
     let chartInstance = null;
 
-    // ----- সহায়ক: স্পেস-বিভক্ত স্ট্রিং থেকে মোট বের করুন -----
+    // Helper: sum space-separated numbers
     function sumOfSpaceString(str) {
         if (!str.trim()) return 0;
         const parts = str.trim().split(/\s+/);
@@ -329,7 +405,7 @@
         return total;
     }
 
-    // ----- টেবিল কাঠামো তৈরি -----
+    // Build table structure
     function buildTableStructure() {
         const wrapper = document.getElementById('tableWrapper');
         wrapper.innerHTML = '';
@@ -363,21 +439,19 @@
         wrapper.appendChild(table);
     }
 
-    // ----- একটি খাতের সারি তৈরি -----
+    // Add a section row
     function addSectionRow(sectionName, defaultVal = '') {
         const row = tbody.insertRow();
 
-        // খাতের নাম
         const nameCell = row.insertCell();
         nameCell.textContent = sectionName;
         nameCell.className = 'section-name';
 
-        // ডিফল্ট ইনপুট (এখন ফাঁকা, প্লেসহোল্ডার '0')
         const defCell = row.insertCell();
         const defInput = document.createElement('input');
         defInput.type = 'number';
         defInput.step = 'any';
-        defInput.value = (defaultVal === '' ? '' : defaultVal); // যদি ডিফল্ট ভ্যালু দেওয়া থাকে তবেই সেট করি, নাহলে ফাঁকা
+        defInput.value = (defaultVal === '' ? '' : defaultVal);
         defInput.placeholder = '0';
         defInput.classList.add('default-input');
         defCell.appendChild(defInput);
@@ -389,7 +463,6 @@
         allDefaultBtn.title = 'সব মাসের চেকবক্স টিক করে ডিফল্ট মান বসান';
         defCell.appendChild(allDefaultBtn);
 
-        // ১২ মাসের সেল (চেকবক্স + টেক্সট ইনপুট) — ইনপুট ফাঁকা, প্লেসহোল্ডার '০'
         const monthCells = [];
         for (let m = 0; m < 12; m++) {
             const cell = row.insertCell();
@@ -414,7 +487,6 @@
 
             monthCells.push({ checkbox, inp });
 
-            // চেকবক্স ইভেন্ট
             checkbox.addEventListener('change', function(e) {
                 const rowDef = parseFloat(defInput.value) || 0;
                 if (this.checked) {
@@ -432,7 +504,6 @@
             });
         }
 
-        // সব মাসে ডিফল্ট প্রয়োগের বাটন
         allDefaultBtn.addEventListener('click', function() {
             const rowDef = parseFloat(defInput.value) || 0;
             monthCells.forEach(({ checkbox, inp }) => {
@@ -447,24 +518,24 @@
             });
         });
 
-        // মোট কলাম
         const totalCell = row.insertCell();
         totalCell.textContent = '০';
         totalCell.className = 'total-cell section-total';
     }
 
-    // ----- ডিফল্ট খাত লোড (সব ডিফল্ট মান ফাঁকা) -----
+    // Load default sections
     function loadDefaultSections() {
         defaultSections.forEach(name => addSectionRow(name, ''));
     }
 
-    // ----- হিসাব আপডেট (রেজাল্ট বাটন) -----
+    // Calculate all and update UI, including section-wise totals
     function calculateAll() {
         if (!tbody) return;
 
         const monthSums = new Array(12).fill(0);
         let totalYearly = 0;
         const rows = tbody.rows;
+        const sectionTotals = []; // array of { name, total }
 
         for (let r = 0; r < rows.length; r++) {
             const row = rows[r];
@@ -489,13 +560,16 @@
                 if (val !== 0) paidMonths++;
             });
 
-            // মোট কলাম
             const cells = row.cells;
             const totalCell = cells[cells.length - 1];
             totalCell.textContent = rowSum.toFixed(2) + ` (${paidMonths} মাস)`;
+
+            // Collect section total
+            const sectionName = cells[0].textContent.trim();
+            sectionTotals.push({ name: sectionName, total: rowSum });
         }
 
-        // মাস মোট পদতলে
+        // Update footers
         for (let m = 0; m < 12; m++) {
             const footCell = document.getElementById(`monthTotal${m}`);
             if (footCell) footCell.textContent = monthSums[m].toFixed(2);
@@ -517,9 +591,19 @@
         warnDiv.style.display = totalYearly > mainBudget ? 'block' : 'none';
 
         updateChart(mainBudget, totalYearly);
+
+        // Display section-wise totals
+        const grid = document.getElementById('sectionTotalsGrid');
+        grid.innerHTML = '';
+        sectionTotals.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'total-item';
+            div.innerHTML = `<span class="sec-name">${item.name}</span> <span class="sec-amount">${item.total.toFixed(2)}</span>`;
+            grid.appendChild(div);
+        });
     }
 
-    // ----- চার্ট আপডেট -----
+    // Update chart
     function updateChart(budget, expense) {
         const ctx = document.getElementById('budgetChart').getContext('2d');
         if (chartInstance) chartInstance.destroy();
@@ -541,7 +625,7 @@
         });
     }
 
-    // ----- লোকাল স্টোরেজ (স্ট্রিং সংরক্ষণ) -----
+    // Save to localStorage
     function saveToLocal() {
         const rows = tbody.rows;
         const data = [];
@@ -567,7 +651,7 @@
         alert('✅ সংরক্ষিত');
     }
 
-    // ----- লোকাল থেকে লোড -----
+    // Load from localStorage
     function loadFromLocal() {
         const saved = localStorage.getItem('budgetAppData');
         if (!saved) { alert('❌ কোনো ডাটা নেই'); return; }
@@ -577,7 +661,6 @@
             data.forEach(item => {
                 addSectionRow(item.name, item.default.toString());
             });
-            // এখন প্রতিটি সারির month state পুনরুদ্ধার
             const newRows = tbody.rows;
             for (let i = 0; i < data.length; i++) {
                 const row = newRows[i];
@@ -604,60 +687,9 @@
         } catch (e) { alert('ডাটা দুর্নীতিগ্রস্ত'); }
     }
 
-    // ----- CSV এক্সপোর্ট (প্রতি মাসের কাঁচা স্ট্রিং সহ) -----
-    function exportToCsv() {
-        const rows = tbody.rows;
-        if (!rows.length) return;
-        let csv = 'খাতের নাম,ডিফল্ট,';
-        for (let m of monthsBangla) csv += m + ' (কাঁচা),' + m + ' (ডিফল্ট? আসল সংখ্যা),';
-        csv += 'মোট টাকা,পরিশোধ মাস\n';
-
-        for (let r = 0; r < rows.length; r++) {
-            const row = rows[r];
-            const name = row.cells[0].textContent;
-            const defInput = row.querySelector('.default-input');
-            const defVal = parseFloat(defInput.value) || 0;
-            const monthCells = row.querySelectorAll('.month-cell');
-            let rowSum = 0;
-            let paid = 0;
-            let line = `"${name}",${defVal},`;
-            monthCells.forEach(cell => {
-                const checkbox = cell.querySelector('.month-checkbox');
-                const inp = cell.querySelector('.month-input');
-                const raw = inp.value.replace(/,/g, ';');
-                let actualVal;
-                if (checkbox.checked) {
-                    actualVal = defVal;
-                } else {
-                    actualVal = sumOfSpaceString(inp.value);
-                }
-                line += `"${raw}",` + actualVal.toFixed(2) + ',';
-                rowSum += actualVal;
-                if (actualVal !== 0) paid++;
-            });
-            line += rowSum.toFixed(2) + ',' + paid;
-            csv += line + '\n';
-        }
-
-        // মাস মোট (সংখ্যা)
-        const monthTotals = [];
-        for (let m = 0; m < 12; m++) {
-            const footCell = document.getElementById(`monthTotal${m}`);
-            monthTotals.push(footCell ? footCell.textContent : '0');
-        }
-        csv += 'মাসিক মোট,,' + monthTotals.join(',(মোট),') + ',\n';
-
-        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'bajet_report.csv';
-        link.click();
-        URL.revokeObjectURL(link.href);
-    }
-
-    // ----- নতুন PDF জেনারেট (দুই ভাগে মাস, প্যাজিনেশন, ছোট ফন্ট) -----
+    // PDF generation with section totals summary at the end
     function generatePDF() {
-        calculateAll();
+        calculateAll(); // ensure fresh data and section totals grid
 
         const year = document.getElementById('runningYear').value || 'N/A';
         const mainBudget = parseFloat(document.getElementById('mainBudget').value) || 0;
@@ -671,7 +703,7 @@
         const sections = [];
         let extraSectionCounter = 0;
 
-        // Fetch section data
+        // Fetch section data with English mapping
         for (let r = 0; r < rows.length; r++) {
             let sectionName = rows[r].cells[0].textContent.trim();
             let isDefault = false;
@@ -679,15 +711,21 @@
                 case 'ঘর ভাড়া': sectionName = 'Rent'; isDefault = true; break;
                 case 'ইলেক্ট্রিক বিল': sectionName = 'Electric Bill'; isDefault = true; break;
                 case 'ওয়াইফাই বিল': sectionName = 'WiFi'; isDefault = true; break;
-                case 'নাস্তা বিল': sectionName = 'Snacks'; isDefault = true; break;
+                case 'নাস্তা বিল ও অভিভাবক সমাবেশ': sectionName = 'Snacks & Guardian Meeting'; isDefault = true; break;
                 case 'প্রকাশনা বিল': sectionName = 'Publication'; isDefault = true; break;
                 case 'স্টেশনারি বিল': sectionName = 'Stationery'; isDefault = true; break;
-                case 'বই বিল': sectionName = 'Books'; isDefault = true; break;
                 case 'শিক্ষক বেতন': sectionName = 'Teacher Salary'; isDefault = true; break;
                 case 'loan': sectionName = 'Loan'; isDefault = true; break;
+                case 'আইটি বিল': sectionName = 'IT Bill'; isDefault = true; break;
+                case 'ইলেকট্রিক ও ইলেক্ট্রনিক বিল': sectionName = 'Electrical & Electronics'; isDefault = true; break;
+                case 'annual sports and class party': sectionName = 'Annual Sports & Class Party'; isDefault = true; break;
+                case 'AGM': sectionName = 'AGM'; isDefault = true; break;
+                case 'কমিটি বৈঠক ও Audit': sectionName = 'Committee & Audit'; isDefault = true; break;
+                case 'আইডি কার্ড': sectionName = 'ID Card'; isDefault = true; break;
+                case 'বই ক্রয়': sectionName = 'Book Purchase'; isDefault = true; break;
                 default: 
                     isDefault = false;
-                    sectionName = String.fromCharCode(65 + extraSectionCounter); // A,B,C...
+                    sectionName = String.fromCharCode(65 + extraSectionCounter);
                     extraSectionCounter++;
             }
 
@@ -729,12 +767,10 @@
         const content = [];
 
         monthChunks.forEach((chunk, chunkIndex) => {
-            // Split sections per page (~25 rows per page)
             const pageSize = 25;
             for (let i = 0; i < sections.length; i += pageSize) {
                 const secChunk = sections.slice(i, i + pageSize);
 
-                // Build table body for this chunk
                 const tableBody = [];
                 const headerRow = ['Section Name', ...monthsEnglish.slice(chunk.start, chunk.end + 1), 'Section Total'];
                 tableBody.push(headerRow);
@@ -747,7 +783,6 @@
                     tableBody.push(secRow);
                 });
 
-                // Monthly total for this chunk
                 const monthlyTotalsRow = ['Monthly Total'];
                 for (let m = chunk.start; m <= chunk.end; m++) {
                     const monthTotal = secChunk.reduce((sum, sec) => sum + sec.monthly[m], 0);
@@ -757,7 +792,6 @@
                 monthlyTotalsRow.push(chunkTotal.toFixed(2));
                 tableBody.push(monthlyTotalsRow);
 
-                // Add header info only on first table per month chunk
                 if(i === 0 && chunkIndex === 0){
                     content.push(
                         { text: 'Investment Report', style: 'header', alignment: 'center', margin:[0,0,0,10] },
@@ -780,26 +814,56 @@
                         hLineColor: ()=>'black',
                         vLineColor: ()=>'black'
                     },
-                    fontSize: 8 // smaller font
+                    fontSize: 8
                 });
             }
         });
 
+        // ----- Section Totals Summary (new page) -----
+        // Build summary table: Section Name and Yearly Total
+        const summaryBody = [];
+        summaryBody.push(['Section Name', 'Yearly Total']);
+        sections.forEach(sec => {
+            const yearly = sec.monthly.reduce((a,b)=>a+b,0).toFixed(2);
+            summaryBody.push([sec.name, yearly]);
+        });
+        // Add grand total row
+        summaryBody.push(['GRAND TOTAL', totalYearlyInvestment.toFixed(2)]);
+
+        content.push(
+            { text: '', pageBreak: 'before' },
+            { text: 'Section-wise Yearly Totals', style: 'header', alignment: 'center', margin:[0,0,0,10] },
+            {
+                table: {
+                    headerRows: 1,
+                    widths: ['*', '*'],
+                    body: summaryBody
+                },
+                layout: {
+                    hLineWidth: ()=>0.5,
+                    vLineWidth: ()=>0.5,
+                    hLineColor: ()=>'black',
+                    vLineColor: ()=>'black'
+                },
+                fontSize: 9
+            }
+        );
+
         const docDefinition = {
             pageSize: 'A4',
             pageOrientation: 'landscape',
-            pageMargins: [15, 20, 15, 20], // smaller side margins
+            pageMargins: [15, 20, 15, 20],
             footer: function(currentPage, pageCount){
                 return { text: 'Page ' + currentPage + ' of ' + pageCount, alignment: 'center', margin:[0,10,0,0] };
             },
             content: content,
-            defaultStyle: { fontSize: 8 } // smaller font globally
+            defaultStyle: { fontSize: 8 }
         };
 
         pdfMake.createPdf(docDefinition).download(`Investment_Report_${year}.pdf`);
     }
 
-    // ----- পৃষ্ঠা লোড -----
+    // Page load
     window.addEventListener('DOMContentLoaded', () => {
         buildTableStructure();
         loadDefaultSections();
@@ -815,9 +879,8 @@
         });
         document.getElementById('saveLocalBtn').addEventListener('click', saveToLocal);
         document.getElementById('loadLocalBtn').addEventListener('click', loadFromLocal);
-        document.getElementById('exportCsvBtn').addEventListener('click', exportToCsv);
 
-        calculateAll();
+        calculateAll(); // initial display
     });
 })();
 </script>
