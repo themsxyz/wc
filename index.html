@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
-    <title>Western School</title>
+    <title>Western School - Expense & Earning</title>
     <!-- Chart.js & pdfmake -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
@@ -110,6 +110,7 @@
         button:hover { background: #13507a; transform: scale(1.02); }
         button.secondary { background: #3f8db3; }
         button.small { padding: 0.2rem 0.8rem; font-size: 0.8rem; margin-left: 0.2rem; }
+        button.success { background: #2e7d32; }
 
         .action-group { display: flex; flex-wrap: wrap; gap: 0.8rem; }
 
@@ -167,10 +168,6 @@
             left: 0;
             z-index: 30;
         }
-        th:nth-child(2) {
-            left: 150px;
-            z-index: 25;
-        }
         th:last-child { border-right: none; }
 
         td {
@@ -186,13 +183,16 @@
             font-weight: 600;
             background: #e4f0f9;
             color: #043753;
-            padding: 0 0.6rem;
-            white-space: nowrap;
+            padding: 0.6rem 0.8rem;
+            white-space: normal;
+            word-break: break-word;
             border-right: 2px solid #b1d2e8;
             position: sticky;
             left: 0;
             background: #e4f0f9;
             z-index: 10;
+            min-width: 180px;
+            max-width: 250px;
         }
         .default-input {
             width: 80px;
@@ -282,6 +282,7 @@
             justify-content: center;
             gap: 1rem;
             margin: 1rem 0 0.5rem;
+            flex-wrap: wrap;
         }
 
         /* Section-wise totals */
@@ -301,6 +302,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1rem;
+            margin-bottom: 2rem;
         }
         .total-item {
             background: white;
@@ -312,56 +314,95 @@
             box-shadow: 0 5px 10px #0000000a;
             border-left: 5px solid #2a7faa;
         }
+        .total-item.earning {
+            border-left-color: #2e7d32;
+        }
         .total-item .sec-name {
             font-weight: 600;
             color: #043753;
+            white-space: normal;
+            word-break: break-word;
+            padding-right: 0.5rem;
         }
         .total-item .sec-amount {
             font-weight: 700;
             color: #1e6b9b;
             font-size: 1.2rem;
+            white-space: nowrap;
+        }
+        .total-item.earning .sec-amount {
+            color: #2e7d32;
+        }
+
+        .table-container {
+            margin-bottom: 2.5rem;
+        }
+        .table-container h2 {
+            color: #0b3954;
+            margin: 0 0 0.5rem 1rem;
+        }
+        .earning-header th {
+            background: #2e7d32;
         }
         footer { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 2rem; }
     </style>
 </head>
 <body>
 <div class="app-container">
-    <h1>📋 Western School</h1>
+    <h1>📋 Western School & College</h1>
 
     <div class="input-panel">
         <div class="year-budget">
             <div class="input-group"><label>চলতি বছর:</label><input type="number" id="runningYear" placeholder="0"></div>
-            <div class="input-group"><label>বাজেট:</label><input type="number" id="mainBudget" placeholder="0"></div>
+            <div class="input-group"><label> ডিরেক্ট বাজেট:</label><input type="number" id="mainBudget" placeholder="0"></div>
         </div>
-        <div class="action-group" style="visibility: hidden; display: none;"></div>
+        <div class="action-group">
+            <button id="setBudgetFromEarnings" class="success">📥 বাজেট = মোট আয়</button>
+        </div>
     </div>
 
-    <div class="add-section-area">
-        <input type="text" id="newSectionName" placeholder="অন্যান্য">
-        <button id="addSectionBtn" class="secondary">➕ খাত যোগ</button>
-        <button id="saveLocalBtn">💾 সেভ </button>
-        <button id="loadLocalBtn">↩️ রিসেট </button>
+    <!-- Earning Section (first) -->
+    <div class="table-container">
+        <h2>📈 আয়ের তালিকা</h2>
+        <div class="add-section-area">
+            <input type="text" id="newEarningSection" placeholder="নতুন আয় খাত">
+            <button id="addEarningBtn" class="secondary">➕ আয় যোগ</button>
+        </div>
+        <div class="table-wrapper" id="earningTableWrapper"></div>
     </div>
 
-    <div class="table-wrapper" id="tableWrapper"></div>
+    <!-- Expense Section (second) -->
+    <div class="table-container">
+        <h2>📉 খরচের তালিকা</h2>
+        <div class="add-section-area">
+            <input type="text" id="newExpenseSection" placeholder="নতুন খরচ খাত">
+            <button id="addExpenseBtn" class="secondary">➕ খরচ যোগ</button>
+        </div>
+        <div class="table-wrapper" id="expenseTableWrapper"></div>
+    </div>
 
     <div class="action-after-table">
         <button id="resultBtn">📊 ফলাফল </button>
         <button id="pdfBtn" class="secondary">📇 PDF</button>
+        <button id="saveLocalBtn">💾 সেভ</button>
+        <button id="loadLocalBtn">↩️ রিসেট</button>
     </div>
 
     <div class="summary-cards" id="summaryCards">
-        <div class="card" style="border-left-color:#2a7faa;"><div class="label">📅 মোট ব্যয়</div><div class="value" id="totalYearlyDisplay">০</div></div>
+        <div class="card" style="border-left-color:#2e7d32;"><div class="label">📈 মোট আয়</div><div class="value" id="totalEarningDisplay">০</div></div>
+        <div class="card" style="border-left-color:#2a7faa;"><div class="label">📉 মোট খরচ</div><div class="value" id="totalExpenseDisplay">০</div></div>
         <div class="card" style="border-left-color:#e68c2e;"><div class="label">💰 বাজেট</div><div class="value" id="mainBudgetDisplay">০</div></div>
-        <div class="card" style="border-left-color:#4caf7a;"><div class="label">✨ উদ্বৃত্ত</div><div class="value" id="remainingDisplay">০</div></div>
+        <div class="card" style="border-left-color:#4caf7a;"><div class="label">✨ উদ্বৃত্ত (বাজেট-খরচ)</div><div class="value" id="remainingDisplay">০</div></div>
         <div class="card" style="border-left-color:#bf4b4b;"><div class="label">📈 ব্যবহৃত %</div><div class="value" id="percentDisplay">০%</div></div>
     </div>
-    <div id="warningArea" class="warning" style="display: none;">⚠️ সতর্কতা: ব্যয় বাজেট ছাড়িয়ে গেছে!</div>
+    <div id="warningArea" class="warning" style="display: none;">⚠️ সতর্কতা: খরচ বাজেট ছাড়িয়ে গেছে!</div>
 
-    <!-- Section-wise totals (updated on result) -->
+    <!-- Separate section-wise totals -->
     <div class="section-totals-area" id="sectionTotalsArea">
-        <h3>📋 খাতওয়ারী মোট (বার্ষিক)</h3>
-        <div id="sectionTotalsGrid" class="totals-grid"></div>
+        <h3>📋 আয় খাত সমূহ</h3>
+        <div id="earningTotalsGrid" class="totals-grid"></div>
+        <h3>📋 খরচ খাত সমূহ</h3>
+        <div id="expenseTotalsGrid" class="totals-grid"></div>
     </div>
 
     <div class="chart-container"><canvas id="budgetChart" width="300" height="300"></canvas></div>
@@ -371,26 +412,42 @@
 (function() {
     const monthsBangla = ['জানুয়ারী','ফেব্রুয়ারী','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
 
-    // Updated default sections
-    const defaultSections = [
+    // Default sections
+    const expenseDefaultSections = [
         'ঘর ভাড়া',
         'ইলেক্ট্রিক বিল',
         'ওয়াইফাই বিল',
         'নাস্তা বিল ও অভিভাবক সমাবেশ',
         'প্রকাশনা বিল',
         'স্টেশনারি বিল',
-        'শিক্ষক বেতন',
-        'loan',
+        'শিক্ষক বেতন ও ভাতা',
+        'ঋণ শোধ',
         'আইটি বিল',
-        'ইলেকট্রিক ও ইলেক্ট্রনিক বিল',
-        'annual sports and class party',
+        'ইলেকট্রিক ও ইলেক্ট্রনিক সার্ভিস বил',
+        'বার্ষিক ক্রীড়া ও ক্লাস পার্টি',
         'AGM',
         'কমিটি বৈঠক ও Audit',
         'আইডি কার্ড',
-        'বই ক্রয়'
+        'বই ক্রয়',
+        'সফটওয়্যার',
+        'ভর্তি প্রচার',
+        'ডেকরেশন'
     ];
 
-    let tbody, table;
+    const earningDefaultSections = [
+        'গত সালের উদবৃত',
+        'বই খাতা বিক্রি',
+        'ভর্তি ফর্ম বিক্রি',
+        'ঘরভাড়া',
+        'ক্রীড়া ফি',
+        'বেতন',
+        'ভর্তি ফি',
+        'পরিক্ষার ফি',
+        'টিসি ফি'
+    ];
+
+    let expenseTbody, earningTbody;
+    let expenseTable, earningTable;
     let chartInstance = null;
 
     // Helper: sum space-separated numbers
@@ -405,42 +462,75 @@
         return total;
     }
 
-    // Build table structure
-    function buildTableStructure() {
-        const wrapper = document.getElementById('tableWrapper');
-        wrapper.innerHTML = '';
-        table = document.createElement('table');
-        table.id = 'budgetTable';
+    // Build both tables
+    function buildTables() {
+        // Earning table (first)
+        const earningWrapper = document.getElementById('earningTableWrapper');
+        earningWrapper.innerHTML = '';
+        earningTable = document.createElement('table');
+        earningTable.id = 'earningTable';
 
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        const th1 = document.createElement('th'); th1.textContent = 'খাত'; headerRow.appendChild(th1);
-        const thDef = document.createElement('th'); thDef.textContent = 'ডিফল্ট (টাকা)'; headerRow.appendChild(thDef);
+        const theadEarn = document.createElement('thead');
+        const headerRowEarn = document.createElement('tr');
+        const th1Earn = document.createElement('th'); th1Earn.textContent = 'আয় খাত'; headerRowEarn.appendChild(th1Earn);
+        const thDefEarn = document.createElement('th'); thDefEarn.textContent = 'ডিফল্ট (টাকা)'; headerRowEarn.appendChild(thDefEarn);
         monthsBangla.forEach(m => {
-            const th = document.createElement('th'); th.textContent = m; headerRow.appendChild(th);
+            const th = document.createElement('th'); th.textContent = m; headerRowEarn.appendChild(th);
         });
-        const thTotal = document.createElement('th'); thTotal.textContent = 'মোট (মাস)'; headerRow.appendChild(thTotal);
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
+        const thTotalEarn = document.createElement('th'); thTotalEarn.textContent = 'মোট (মাস)'; headerRowEarn.appendChild(thTotalEarn);
+        theadEarn.appendChild(headerRowEarn);
+        earningTable.appendChild(theadEarn);
 
-        tbody = document.createElement('tbody');
-        table.appendChild(tbody);
+        earningTbody = document.createElement('tbody');
+        earningTable.appendChild(earningTbody);
 
-        const tfoot = document.createElement('tfoot');
-        const footRow = document.createElement('tr');
-        const tdFirst = document.createElement('td'); tdFirst.textContent = '📌 মাস মোট'; footRow.appendChild(tdFirst);
-        const tdDefPlaceholder = document.createElement('td'); tdDefPlaceholder.textContent = '—'; footRow.appendChild(tdDefPlaceholder);
+        const tfootEarn = document.createElement('tfoot');
+        const footRowEarn = document.createElement('tr');
+        const tdFirstEarn = document.createElement('td'); tdFirstEarn.textContent = '📌 মাস মোট'; footRowEarn.appendChild(tdFirstEarn);
+        const tdDefPlaceholderEarn = document.createElement('td'); tdDefPlaceholderEarn.textContent = '—'; footRowEarn.appendChild(tdDefPlaceholderEarn);
         for (let i = 0; i < 12; i++) {
-            const td = document.createElement('td'); td.textContent = '০'; td.id = `monthTotal${i}`; footRow.appendChild(td);
+            const td = document.createElement('td'); td.textContent = '০'; td.id = `earnMonthTotal${i}`; footRowEarn.appendChild(td);
         }
-        const tdYearly = document.createElement('td'); tdYearly.textContent = '০'; tdYearly.id = 'yearlyTotalFoot'; footRow.appendChild(tdYearly);
-        tfoot.appendChild(footRow);
-        table.appendChild(tfoot);
-        wrapper.appendChild(table);
+        const tdYearlyEarn = document.createElement('td'); tdYearlyEarn.textContent = '০'; tdYearlyEarn.id = 'earnYearlyTotalFoot'; footRowEarn.appendChild(tdYearlyEarn);
+        tfootEarn.appendChild(footRowEarn);
+        earningTable.appendChild(tfootEarn);
+        earningWrapper.appendChild(earningTable);
+
+        // Expense table
+        const expenseWrapper = document.getElementById('expenseTableWrapper');
+        expenseWrapper.innerHTML = '';
+        expenseTable = document.createElement('table');
+        expenseTable.id = 'expenseTable';
+
+        const theadExp = document.createElement('thead');
+        const headerRowExp = document.createElement('tr');
+        const th1 = document.createElement('th'); th1.textContent = 'খরচ খাত'; headerRowExp.appendChild(th1);
+        const thDef = document.createElement('th'); thDef.textContent = 'ডিফল্ট (টাকা)'; headerRowExp.appendChild(thDef);
+        monthsBangla.forEach(m => {
+            const th = document.createElement('th'); th.textContent = m; headerRowExp.appendChild(th);
+        });
+        const thTotal = document.createElement('th'); thTotal.textContent = 'মোট (মাস)'; headerRowExp.appendChild(thTotal);
+        theadExp.appendChild(headerRowExp);
+        expenseTable.appendChild(theadExp);
+
+        expenseTbody = document.createElement('tbody');
+        expenseTable.appendChild(expenseTbody);
+
+        const tfootExp = document.createElement('tfoot');
+        const footRowExp = document.createElement('tr');
+        const tdFirstExp = document.createElement('td'); tdFirstExp.textContent = '📌 মাস মোট'; footRowExp.appendChild(tdFirstExp);
+        const tdDefPlaceholderExp = document.createElement('td'); tdDefPlaceholderExp.textContent = '—'; footRowExp.appendChild(tdDefPlaceholderExp);
+        for (let i = 0; i < 12; i++) {
+            const td = document.createElement('td'); td.textContent = '০'; td.id = `expMonthTotal${i}`; footRowExp.appendChild(td);
+        }
+        const tdYearlyExp = document.createElement('td'); tdYearlyExp.textContent = '০'; tdYearlyExp.id = 'expYearlyTotalFoot'; footRowExp.appendChild(tdYearlyExp);
+        tfootExp.appendChild(footRowExp);
+        expenseTable.appendChild(tfootExp);
+        expenseWrapper.appendChild(expenseTable);
     }
 
-    // Add a section row
-    function addSectionRow(sectionName, defaultVal = '') {
+    // Add a row to a specific tbody
+    function addRow(tbody, sectionName, defaultVal = '') {
         const row = tbody.insertRow();
 
         const nameCell = row.insertCell();
@@ -524,21 +614,25 @@
     }
 
     // Load default sections
-    function loadDefaultSections() {
-        defaultSections.forEach(name => addSectionRow(name, ''));
+    function loadDefaultEarning() {
+        earningDefaultSections.forEach(name => addRow(earningTbody, name, ''));
+    }
+    function loadDefaultExpense() {
+        expenseDefaultSections.forEach(name => addRow(expenseTbody, name, ''));
     }
 
-    // Calculate all and update UI, including section-wise totals
+    // Calculate all and update UI
     function calculateAll() {
-        if (!tbody) return;
+        if (!expenseTbody || !earningTbody) return;
 
-        const monthSums = new Array(12).fill(0);
-        let totalYearly = 0;
-        const rows = tbody.rows;
-        const sectionTotals = []; // array of { name, total }
+        // Earning calculation
+        const earnMonthSums = new Array(12).fill(0);
+        let totalEarning = 0;
+        const earnRows = earningTbody.rows;
+        const earningTotals = [];
 
-        for (let r = 0; r < rows.length; r++) {
-            const row = rows[r];
+        for (let r = 0; r < earnRows.length; r++) {
+            const row = earnRows[r];
             const defInput = row.querySelector('.default-input');
             const defaultVal = parseFloat(defInput.value) || 0;
             const monthContainers = row.querySelectorAll('.month-cell');
@@ -555,51 +649,95 @@
                     val = sumOfSpaceString(inp.value);
                 }
                 rowSum += val;
-                monthSums[idx] += val;
-                totalYearly += val;
+                earnMonthSums[idx] += val;
+                totalEarning += val;
                 if (val !== 0) paidMonths++;
             });
 
             const cells = row.cells;
             const totalCell = cells[cells.length - 1];
             totalCell.textContent = rowSum.toFixed(2) + ` (${paidMonths} মাস)`;
+            earningTotals.push({ name: cells[0].textContent.trim(), total: rowSum });
+        }
 
-            // Collect section total
-            const sectionName = cells[0].textContent.trim();
-            sectionTotals.push({ name: sectionName, total: rowSum });
+        // Expense calculation
+        const expMonthSums = new Array(12).fill(0);
+        let totalExpense = 0;
+        const expRows = expenseTbody.rows;
+        const expenseTotals = [];
+
+        for (let r = 0; r < expRows.length; r++) {
+            const row = expRows[r];
+            const defInput = row.querySelector('.default-input');
+            const defaultVal = parseFloat(defInput.value) || 0;
+            const monthContainers = row.querySelectorAll('.month-cell');
+            let rowSum = 0;
+            let paidMonths = 0;
+
+            monthContainers.forEach((container, idx) => {
+                const checkbox = container.querySelector('.month-checkbox');
+                const inp = container.querySelector('.month-input');
+                let val = 0;
+                if (checkbox.checked) {
+                    val = defaultVal;
+                } else {
+                    val = sumOfSpaceString(inp.value);
+                }
+                rowSum += val;
+                expMonthSums[idx] += val;
+                totalExpense += val;
+                if (val !== 0) paidMonths++;
+            });
+
+            const cells = row.cells;
+            const totalCell = cells[cells.length - 1];
+            totalCell.textContent = rowSum.toFixed(2) + ` (${paidMonths} মাস)`;
+            expenseTotals.push({ name: cells[0].textContent.trim(), total: rowSum });
         }
 
         // Update footers
         for (let m = 0; m < 12; m++) {
-            const footCell = document.getElementById(`monthTotal${m}`);
-            if (footCell) footCell.textContent = monthSums[m].toFixed(2);
+            const earnFoot = document.getElementById(`earnMonthTotal${m}`);
+            if (earnFoot) earnFoot.textContent = earnMonthSums[m].toFixed(2);
+            const expFoot = document.getElementById(`expMonthTotal${m}`);
+            if (expFoot) expFoot.textContent = expMonthSums[m].toFixed(2);
         }
-        const yearlyFoot = document.getElementById('yearlyTotalFoot');
-        if (yearlyFoot) yearlyFoot.textContent = totalYearly.toFixed(2);
+        document.getElementById('earnYearlyTotalFoot').textContent = totalEarning.toFixed(2);
+        document.getElementById('expYearlyTotalFoot').textContent = totalExpense.toFixed(2);
 
         const mainBudgetInput = document.getElementById('mainBudget');
         const mainBudget = parseFloat(mainBudgetInput.value) || 0;
-        const remaining = mainBudget - totalYearly;
-        const percent = mainBudget > 0 ? (totalYearly / mainBudget) * 100 : 0;
+        const remaining = mainBudget - totalExpense;
+        const percent = mainBudget > 0 ? (totalExpense / mainBudget) * 100 : 0;
 
-        document.getElementById('totalYearlyDisplay').innerText = totalYearly.toFixed(2);
+        document.getElementById('totalEarningDisplay').innerText = totalEarning.toFixed(2);
+        document.getElementById('totalExpenseDisplay').innerText = totalExpense.toFixed(2);
         document.getElementById('mainBudgetDisplay').innerText = mainBudget.toFixed(2);
         document.getElementById('remainingDisplay').innerText = remaining.toFixed(2);
         document.getElementById('percentDisplay').innerText = percent.toFixed(2) + '%';
 
         const warnDiv = document.getElementById('warningArea');
-        warnDiv.style.display = totalYearly > mainBudget ? 'block' : 'none';
+        warnDiv.style.display = totalExpense > mainBudget ? 'block' : 'none';
 
-        updateChart(mainBudget, totalYearly);
+        updateChart(mainBudget, totalExpense);
 
-        // Display section-wise totals
-        const grid = document.getElementById('sectionTotalsGrid');
-        grid.innerHTML = '';
-        sectionTotals.forEach(item => {
+        // Display separate grids
+        const earnGrid = document.getElementById('earningTotalsGrid');
+        earnGrid.innerHTML = '';
+        earningTotals.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'total-item earning';
+            div.innerHTML = `<span class="sec-name">${item.name}</span> <span class="sec-amount">${item.total.toFixed(2)}</span>`;
+            earnGrid.appendChild(div);
+        });
+
+        const expGrid = document.getElementById('expenseTotalsGrid');
+        expGrid.innerHTML = '';
+        expenseTotals.forEach(item => {
             const div = document.createElement('div');
             div.className = 'total-item';
             div.innerHTML = `<span class="sec-name">${item.name}</span> <span class="sec-amount">${item.total.toFixed(2)}</span>`;
-            grid.appendChild(div);
+            expGrid.appendChild(div);
         });
     }
 
@@ -625,219 +763,256 @@
         });
     }
 
-    // Save to localStorage
+    // Save both tables to localStorage
     function saveToLocal() {
-        const rows = tbody.rows;
-        const data = [];
-        for (let r = 0; r < rows.length; r++) {
-            const row = rows[r];
-            const name = row.cells[0].textContent;
-            const defInput = row.querySelector('.default-input');
-            const defVal = parseFloat(defInput.value) || 0;
-            const monthCells = row.querySelectorAll('.month-cell');
-            const monthsData = [];
-            monthCells.forEach(cell => {
-                const checkbox = cell.querySelector('.month-checkbox');
-                const inp = cell.querySelector('.month-input');
-                monthsData.push({
-                    useDefault: checkbox.checked,
-                    rawString: inp.value,
-                    savedCustom: inp.dataset.custom || ''
+        function serializeTbody(tbody) {
+            const rows = tbody.rows;
+            const data = [];
+            for (let r = 0; r < rows.length; r++) {
+                const row = rows[r];
+                const name = row.cells[0].textContent;
+                const defInput = row.querySelector('.default-input');
+                const defVal = parseFloat(defInput.value) || 0;
+                const monthCells = row.querySelectorAll('.month-cell');
+                const monthsData = [];
+                monthCells.forEach(cell => {
+                    const checkbox = cell.querySelector('.month-checkbox');
+                    const inp = cell.querySelector('.month-input');
+                    monthsData.push({
+                        useDefault: checkbox.checked,
+                        rawString: inp.value,
+                        savedCustom: inp.dataset.custom || ''
+                    });
                 });
-            });
-            data.push({ name, default: defVal, months: monthsData });
+                data.push({ name, default: defVal, months: monthsData });
+            }
+            return data;
         }
-        localStorage.setItem('budgetAppData', JSON.stringify(data));
-        alert('✅ সংরক্ষিত');
+        const expenseData = serializeTbody(expenseTbody);
+        const earningData = serializeTbody(earningTbody);
+        localStorage.setItem('expenseAppData', JSON.stringify(expenseData));
+        localStorage.setItem('earningAppData', JSON.stringify(earningData));
+        alert('✅ সব ডাটা সংরক্ষিত');
     }
 
-    // Load from localStorage
+    // Load both tables from localStorage
     function loadFromLocal() {
-        const saved = localStorage.getItem('budgetAppData');
-        if (!saved) { alert('❌ কোনো ডাটা নেই'); return; }
+        const expenseSaved = localStorage.getItem('expenseAppData');
+        const earningSaved = localStorage.getItem('earningAppData');
+        if (!expenseSaved || !earningSaved) { alert('❌ কোনো ডাটা নেই'); return; }
         try {
-            const data = JSON.parse(saved);
-            while (tbody.rows.length > 0) tbody.deleteRow(0);
-            data.forEach(item => {
-                addSectionRow(item.name, item.default.toString());
-            });
-            const newRows = tbody.rows;
-            for (let i = 0; i < data.length; i++) {
-                const row = newRows[i];
-                const monthCells = row.querySelectorAll('.month-cell');
-                const defInput = row.querySelector('.default-input');
-                const item = data[i];
-                item.months.forEach((mData, idx) => {
-                    if (monthCells[idx]) {
-                        const checkbox = monthCells[idx].querySelector('.month-checkbox');
-                        const inp = monthCells[idx].querySelector('.month-input');
-                        checkbox.checked = mData.useDefault;
-                        inp.value = mData.rawString;
-                        inp.dataset.custom = mData.savedCustom || '';
-                        inp.disabled = mData.useDefault;
-                        if (mData.useDefault) {
-                            const defVal = parseFloat(defInput.value) || 0;
-                            inp.value = defVal.toString();
+            const expenseData = JSON.parse(expenseSaved);
+            const earningData = JSON.parse(earningSaved);
+
+            // Clear tables
+            while (expenseTbody.rows.length > 0) expenseTbody.deleteRow(0);
+            while (earningTbody.rows.length > 0) earningTbody.deleteRow(0);
+
+            expenseData.forEach(item => addRow(expenseTbody, item.name, item.default.toString()));
+            earningData.forEach(item => addRow(earningTbody, item.name, item.default.toString()));
+
+            // Restore month states
+            function restoreTbody(tbody, data) {
+                const newRows = tbody.rows;
+                for (let i = 0; i < data.length; i++) {
+                    const row = newRows[i];
+                    const monthCells = row.querySelectorAll('.month-cell');
+                    const defInput = row.querySelector('.default-input');
+                    const item = data[i];
+                    item.months.forEach((mData, idx) => {
+                        if (monthCells[idx]) {
+                            const checkbox = monthCells[idx].querySelector('.month-checkbox');
+                            const inp = monthCells[idx].querySelector('.month-input');
+                            checkbox.checked = mData.useDefault;
+                            inp.value = mData.rawString;
+                            inp.dataset.custom = mData.savedCustom || '';
+                            inp.disabled = mData.useDefault;
+                            if (mData.useDefault) {
+                                const defVal = parseFloat(defInput.value) || 0;
+                                inp.value = defVal.toString();
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
+            restoreTbody(expenseTbody, expenseData);
+            restoreTbody(earningTbody, earningData);
+
             calculateAll();
             alert('✅ ডাটা পুনরুদ্ধার');
         } catch (e) { alert('ডাটা দুর্নীতিগ্রস্ত'); }
     }
 
-    // PDF generation with section totals summary at the end
+    // Set budget from total earnings
+    function setBudgetFromEarnings() {
+        const totalEarning = parseFloat(document.getElementById('totalEarningDisplay').innerText) || 0;
+        document.getElementById('mainBudget').value = totalEarning.toFixed(2);
+        calculateAll();
+    }
+
+    // Map Bangla section name to English for PDF (based on default lists)
+    function mapSectionName(name, isExpense) {
+        // Expense mapping
+        if (isExpense) {
+            switch(name) {
+                case 'ঘর ভাড়া': return 'Rent';
+                case 'ইলেক্ট্রিক বিল': return 'Electric Bill';
+                case 'ওয়াইফাই বিল': return 'WiFi';
+                case 'নাস্তা বিল ও অভিভাবক সমাবেশ': return 'Snacks & Guardian Meeting';
+                case 'প্রকাশনা বিল': return 'Publication';
+                case 'স্টেশনারি বিল': return 'Stationery';
+                case 'শিক্ষক বেতন ও ভাতা': return 'Teacher Salary & Allowance';
+                case 'ঋণ শোধ': return 'Loan Repayment';
+                case 'আইটি বিল': return 'IT Bill';
+                case 'ইলেকট্রিক ও ইলেক্ট্রনিক সার্ভিস বিল': return 'Electrical & Electronics Service';
+                case 'বার্ষিক ক্রীড়া ও ক্লাস পার্টি': return 'Annual Sports & Class Party';
+                case 'AGM': return 'AGM';
+                case 'কমিটি বৈঠক ও Audit': return 'Committee & Audit';
+                case 'আইডি কার্ড': return 'ID Card';
+                case 'বই ক্রয়': return 'Book Purchase';
+                case 'সফটওয়্যার': return 'Software';
+                case 'ভর্তি প্রচার': return 'Admission Promotion';
+                case 'ডেকরেশন': return 'Decoration';
+                default: return name; // keep as is for custom sections
+            }
+        } else {
+            // Earning mapping
+            switch(name) {
+                case 'গত সালের উদবৃত': return 'Previous Year Surplus';
+                case 'বই খাতা বিক্রি': return 'Book & Notebook Sales';
+                case 'ভর্তি ফর্ম বিক্রি': return 'Admission Form Sales';
+                case 'ঘরভাড়া': return 'Rent Income';
+                case 'ক্রীড়া ফি': return 'Sports Fee';
+                case 'বেতন': return 'Tuition Fee';
+                case 'ভর্তি ফি': return 'Admission Fee';
+                case 'পরিক্ষার ফি': return 'Exam Fee';
+                case 'টিসি ফি': return 'TC Fee';
+                default: return name;
+            }
+        }
+    }
+
+    // PDF generation with earning first, then expense
     function generatePDF() {
-        calculateAll(); // ensure fresh data and section totals grid
+        calculateAll();
 
         const year = document.getElementById('runningYear').value || 'N/A';
         const mainBudget = parseFloat(document.getElementById('mainBudget').value) || 0;
+        const totalExpense = parseFloat(document.getElementById('totalExpenseDisplay').innerText) || 0;
+        const totalEarning = parseFloat(document.getElementById('totalEarningDisplay').innerText) || 0;
+        const remaining = mainBudget - totalExpense;
+        const status = mainBudget > 0 ? (totalExpense / mainBudget * 100).toFixed(2) + '%' : 'N/A';
 
         const monthsEnglish = [
             "January","February","March","April","May","June",
             "July","August","September","October","November","December"
         ];
 
-        const rows = tbody.rows;
-        const sections = [];
-        let extraSectionCounter = 0;
-
-        // Fetch section data with English mapping
-        for (let r = 0; r < rows.length; r++) {
-            let sectionName = rows[r].cells[0].textContent.trim();
-            let isDefault = false;
-            switch(sectionName){
-                case 'ঘর ভাড়া': sectionName = 'Rent'; isDefault = true; break;
-                case 'ইলেক্ট্রিক বিল': sectionName = 'Electric Bill'; isDefault = true; break;
-                case 'ওয়াইফাই বিল': sectionName = 'WiFi'; isDefault = true; break;
-                case 'নাস্তা বিল ও অভিভাবক সমাবেশ': sectionName = 'Snacks & Guardian Meeting'; isDefault = true; break;
-                case 'প্রকাশনা বিল': sectionName = 'Publication'; isDefault = true; break;
-                case 'স্টেশনারি বিল': sectionName = 'Stationery'; isDefault = true; break;
-                case 'শিক্ষক বেতন': sectionName = 'Teacher Salary'; isDefault = true; break;
-                case 'loan': sectionName = 'Loan'; isDefault = true; break;
-                case 'আইটি বিল': sectionName = 'IT Bill'; isDefault = true; break;
-                case 'ইলেকট্রিক ও ইলেক্ট্রনিক বিল': sectionName = 'Electrical & Electronics'; isDefault = true; break;
-                case 'annual sports and class party': sectionName = 'Annual Sports & Class Party'; isDefault = true; break;
-                case 'AGM': sectionName = 'AGM'; isDefault = true; break;
-                case 'কমিটি বৈঠক ও Audit': sectionName = 'Committee & Audit'; isDefault = true; break;
-                case 'আইডি কার্ড': sectionName = 'ID Card'; isDefault = true; break;
-                case 'বই ক্রয়': sectionName = 'Book Purchase'; isDefault = true; break;
-                default: 
-                    isDefault = false;
-                    sectionName = String.fromCharCode(65 + extraSectionCounter);
-                    extraSectionCounter++;
-            }
-
-            const monthCells = rows[r].querySelectorAll('.month-cell');
-            const monthlyValues = [];
-            for (let m = 0; m < 12; m++) {
-                const container = monthCells[m];
-                const checkbox = container.querySelector('.month-checkbox');
-                const inp = container.querySelector('.month-input');
-                let val = 0;
-                if (checkbox.checked) {
-                    val = parseFloat(rows[r].querySelector('.default-input').value) || 0;
-                } else {
-                    const raw = inp.value.trim();
-                    if(raw) {
-                        const parts = raw.split(/\s+/);
-                        for(let p of parts){
-                            const num = parseFloat(p);
-                            if(!isNaN(num)) val += num;
+        // Helper to extract sections from a tbody with mapping
+        function extractSections(tbody, isExpense) {
+            const rows = tbody.rows;
+            const sections = [];
+            for (let r = 0; r < rows.length; r++) {
+                const originalName = rows[r].cells[0].textContent.trim();
+                const sectionName = mapSectionName(originalName, isExpense);
+                const monthCells = rows[r].querySelectorAll('.month-cell');
+                const monthlyValues = [];
+                for (let m = 0; m < 12; m++) {
+                    const container = monthCells[m];
+                    const checkbox = container.querySelector('.month-checkbox');
+                    const inp = container.querySelector('.month-input');
+                    let val = 0;
+                    if (checkbox.checked) {
+                        val = parseFloat(rows[r].querySelector('.default-input').value) || 0;
+                    } else {
+                        const raw = inp.value.trim();
+                        if(raw) {
+                            const parts = raw.split(/\s+/);
+                            for(let p of parts){
+                                const num = parseFloat(p);
+                                if(!isNaN(num)) val += num;
+                            }
                         }
                     }
+                    monthlyValues.push(val);
                 }
-                monthlyValues.push(val);
+                sections.push({ name: sectionName, monthly: monthlyValues });
             }
-
-            sections.push({ name: sectionName, monthly: monthlyValues });
+            return sections;
         }
 
-        const totalYearlyInvestment = sections.reduce((sum, sec) => sum + sec.monthly.reduce((a,b)=>a+b,0),0);
-        const remaining = mainBudget - totalYearlyInvestment;
-        const status = mainBudget > 0 ? (totalYearlyInvestment / mainBudget * 100).toFixed(2) + '%' : 'N/A';
-
-        // Split months in 2 parts: 0-5, 6-11
-        const monthChunks = [
-            { start: 0, end: 5 },
-            { start: 6, end: 11 }
-        ];
+        const earningSections = extractSections(earningTbody, false);
+        const expenseSections = extractSections(expenseTbody, true);
 
         const content = [];
 
-        monthChunks.forEach((chunk, chunkIndex) => {
+        // Helper to add tables for a set of sections
+        function addTablesForSections(sections, title) {
+            if (sections.length === 0) return;
+            content.push({ text: title, style: 'subheader', margin: [0, 10, 0, 5] });
+            const monthChunks = [{ start: 0, end: 5 }, { start: 6, end: 11 }];
             const pageSize = 25;
-            for (let i = 0; i < sections.length; i += pageSize) {
-                const secChunk = sections.slice(i, i + pageSize);
+            monthChunks.forEach((chunk, chunkIndex) => {
+                for (let i = 0; i < sections.length; i += pageSize) {
+                    const secChunk = sections.slice(i, i + pageSize);
+                    if (secChunk.length === 0) continue;
 
-                const tableBody = [];
-                const headerRow = ['Section Name', ...monthsEnglish.slice(chunk.start, chunk.end + 1), 'Section Total'];
-                tableBody.push(headerRow);
+                    const tableBody = [];
+                    const headerRow = ['Section Name', ...monthsEnglish.slice(chunk.start, chunk.end + 1), 'Section Total'];
+                    tableBody.push(headerRow);
 
-                secChunk.forEach(sec => {
-                    const secRow = [sec.name];
-                    const secTotal = sec.monthly.slice(chunk.start, chunk.end + 1).reduce((a,b)=>a+b,0);
-                    sec.monthly.slice(chunk.start, chunk.end + 1).forEach(val => secRow.push(val.toFixed(2)));
-                    secRow.push(secTotal.toFixed(2));
-                    tableBody.push(secRow);
-                });
+                    secChunk.forEach(sec => {
+                        const secRow = [sec.name];
+                        const secTotal = sec.monthly.slice(chunk.start, chunk.end + 1).reduce((a,b)=>a+b,0);
+                        sec.monthly.slice(chunk.start, chunk.end + 1).forEach(val => secRow.push(val.toFixed(2)));
+                        secRow.push(secTotal.toFixed(2));
+                        tableBody.push(secRow);
+                    });
 
-                const monthlyTotalsRow = ['Monthly Total'];
-                for (let m = chunk.start; m <= chunk.end; m++) {
-                    const monthTotal = secChunk.reduce((sum, sec) => sum + sec.monthly[m], 0);
-                    monthlyTotalsRow.push(monthTotal.toFixed(2));
+                    const monthlyTotalsRow = ['Monthly Total'];
+                    for (let m = chunk.start; m <= chunk.end; m++) {
+                        const monthTotal = secChunk.reduce((sum, sec) => sum + sec.monthly[m], 0);
+                        monthlyTotalsRow.push(monthTotal.toFixed(2));
+                    }
+                    const chunkTotal = secChunk.reduce((sum, sec) => sum + sec.monthly.slice(chunk.start, chunk.end + 1).reduce((a,b)=>a+b,0),0);
+                    monthlyTotalsRow.push(chunkTotal.toFixed(2));
+                    tableBody.push(monthlyTotalsRow);
+
+                    if (i > 0 || chunkIndex > 0) content.push({ text: '', pageBreak: 'before' });
+                    content.push({
+                        table: {
+                            headerRows: 1,
+                            widths: Array(headerRow.length).fill('*'),
+                            body: tableBody
+                        },
+                        layout: {
+                            hLineWidth: ()=>0.5,
+                            vLineWidth: ()=>0.5,
+                            hLineColor: ()=>'black',
+                            vLineColor: ()=>'black'
+                        },
+                        fontSize: 8
+                    });
                 }
-                const chunkTotal = secChunk.reduce((sum, sec) => sum + sec.monthly.slice(chunk.start, chunk.end + 1).reduce((a,b)=>a+b,0),0);
-                monthlyTotalsRow.push(chunkTotal.toFixed(2));
-                tableBody.push(monthlyTotalsRow);
+            });
+        }
 
-                if(i === 0 && chunkIndex === 0){
-                    content.push(
-                        { text: 'Investment Report', style: 'header', alignment: 'center', margin:[0,0,0,10] },
-                        { text: `Year: ${year}    Main Budget: ${mainBudget.toFixed(2)}`, bold:true, margin:[0,0,0,5] },
-                        { text: `Total Yearly Investment: ${totalYearlyInvestment.toFixed(2)}    Remaining Money: ${remaining.toFixed(2)}    Status: ${status}`, bold:true, margin:[0,0,0,10] }
-                    );
-                } else {
-                    content.push({ text: '', pageBreak: 'before' });
-                }
-
-                content.push({
-                    table: {
-                        headerRows: 1,
-                        widths: Array(headerRow.length).fill('*'),
-                        body: tableBody
-                    },
-                    layout: {
-                        hLineWidth: ()=>0.5,
-                        vLineWidth: ()=>0.5,
-                        hLineColor: ()=>'black',
-                        vLineColor: ()=>'black'
-                    },
-                    fontSize: 8
-                });
-            }
-        });
-
-        // ----- Section Totals Summary (new page) -----
-        // Build summary table: Section Name and Yearly Total
-        const summaryBody = [];
-        summaryBody.push(['Section Name', 'Yearly Total']);
-        sections.forEach(sec => {
-            const yearly = sec.monthly.reduce((a,b)=>a+b,0).toFixed(2);
-            summaryBody.push([sec.name, yearly]);
-        });
-        // Add grand total row
-        summaryBody.push(['GRAND TOTAL', totalYearlyInvestment.toFixed(2)]);
-
-        content.push(
-            { text: '', pageBreak: 'before' },
-            { text: 'Section-wise Yearly Totals', style: 'header', alignment: 'center', margin:[0,0,0,10] },
-            {
+        // Helper to add section totals table
+        function addSectionTotals(sections, title) {
+            if (sections.length === 0) return;
+            content.push({ text: '', pageBreak: 'before' });
+            content.push({ text: title, style: 'subheader', margin: [0, 10, 0, 5] });
+            const totalBody = [['Section Name', 'Yearly Total']];
+            sections.forEach(sec => {
+                const yearly = sec.monthly.reduce((a,b)=>a+b,0).toFixed(2);
+                totalBody.push([sec.name, yearly]);
+            });
+            totalBody.push(['GRAND TOTAL', sections.reduce((sum, sec) => sum + sec.monthly.reduce((a,b)=>a+b,0),0).toFixed(2)]);
+            content.push({
                 table: {
                     headerRows: 1,
-                    widths: ['*', '*'],
-                    body: summaryBody
+                    widths: ['70%', '30%'],
+                    body: totalBody
                 },
                 layout: {
                     hLineWidth: ()=>0.5,
@@ -846,8 +1021,48 @@
                     vLineColor: ()=>'black'
                 },
                 fontSize: 9
-            }
+            });
+        }
+
+        // Overall header
+        content.push(
+            { text: 'Investment Report', style: 'header', alignment: 'center', margin: [0,0,0,10] },
+            { text: `Year: ${year}    Budget (Manual/Earning): ${mainBudget.toFixed(2)}`, bold: true, margin: [0,0,0,5] }
         );
+
+        // Earning tables and totals
+        addTablesForSections(earningSections, 'Earning Details');
+        addSectionTotals(earningSections, 'Earning Section-wise Totals');
+
+        // Expense tables and totals
+        addTablesForSections(expenseSections, 'Expense Details');
+        addSectionTotals(expenseSections, 'Expense Section-wise Totals');
+
+        // Overall summary
+        content.push({ text: '', pageBreak: 'before' });
+        content.push({ text: 'Overall Summary', style: 'header', alignment: 'center', margin: [0,0,0,10] });
+        const summaryBody = [
+            ['Description', 'Amount'],
+            ['Total Earning', totalEarning.toFixed(2)],
+            ['Total Expense', totalExpense.toFixed(2)],
+            ['Budget', mainBudget.toFixed(2)],
+            ['Remaining (Budget - Expense)', remaining.toFixed(2)],
+            ['Spent Percentage', status]
+        ];
+        content.push({
+            table: {
+                headerRows: 1,
+                widths: ['*', '*'],
+                body: summaryBody
+            },
+            layout: {
+                hLineWidth: ()=>0.5,
+                vLineWidth: ()=>0.5,
+                hLineColor: ()=>'black',
+                vLineColor: ()=>'black'
+            },
+            fontSize: 10
+        });
 
         const docDefinition = {
             pageSize: 'A4',
@@ -865,22 +1080,34 @@
 
     // Page load
     window.addEventListener('DOMContentLoaded', () => {
-        buildTableStructure();
-        loadDefaultSections();
+        buildTables();
+        loadDefaultEarning();  // earning first
+        loadDefaultExpense();
 
         document.getElementById('resultBtn').addEventListener('click', calculateAll);
         document.getElementById('pdfBtn').addEventListener('click', generatePDF);
-        document.getElementById('addSectionBtn').addEventListener('click', () => {
-            const inputField = document.getElementById('newSectionName');
+        document.getElementById('setBudgetFromEarnings').addEventListener('click', setBudgetFromEarnings);
+
+        document.getElementById('addEarningBtn').addEventListener('click', () => {
+            const inputField = document.getElementById('newEarningSection');
             let newName = inputField.value.trim();
-            if (newName === '') newName = 'নতুন খাত';
-            addSectionRow(newName, '');
+            if (newName === '') newName = 'নতুন আয়';
+            addRow(earningTbody, newName, '');
             inputField.value = '';
         });
+
+        document.getElementById('addExpenseBtn').addEventListener('click', () => {
+            const inputField = document.getElementById('newExpenseSection');
+            let newName = inputField.value.trim();
+            if (newName === '') newName = 'নতুন খরচ';
+            addRow(expenseTbody, newName, '');
+            inputField.value = '';
+        });
+
         document.getElementById('saveLocalBtn').addEventListener('click', saveToLocal);
         document.getElementById('loadLocalBtn').addEventListener('click', loadFromLocal);
 
-        calculateAll(); // initial display
+        calculateAll();
     });
 })();
 </script>
