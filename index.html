@@ -2,12 +2,12 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
     <title>Western School - Expense & Earning</title>
     <!-- Chart.js & pdfmake -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <style>
         * {
             margin: 0;
@@ -17,22 +17,22 @@
         }
 
         body {
-            background: linear-gradient(145deg, #f0f7fc 0%, #e2eef9 100%);
+            background: linear-gradient(145deg, #f0f7fc 0%, #dae6f0 100%);
             min-height: 100vh;
-            padding: 1.5rem;
+            padding: 1rem;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
         }
 
         .app-container {
-            max-width: 1600px;
+            max-width: 1800px;
             width: 100%;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.85);
             backdrop-filter: blur(12px);
-            border-radius: 2.5rem;
+            border-radius: 2rem;
             box-shadow: 0 25px 50px -12px #0b2f44;
-            padding: 2rem 1.5rem;
+            padding: 1.5rem 1rem;
             border: 1px solid rgba(255,255,255,0.7);
         }
 
@@ -40,18 +40,19 @@
             text-align: center;
             color: #0b3954;
             font-weight: 600;
-            font-size: 2.1rem;
-            margin-bottom: 1.2rem;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
         }
 
         .input-panel {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 0.8rem;
             justify-content: space-between;
             align-items: center;
             background: #ffffffdd;
-            padding: 1rem 1.8rem;
+            padding: 0.8rem 1.5rem;
             border-radius: 3rem;
             margin-bottom: 1.5rem;
         }
@@ -59,7 +60,7 @@
         .year-budget {
             display: flex;
             flex-wrap: wrap;
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
         .input-group {
@@ -67,7 +68,7 @@
             align-items: center;
             gap: 0.5rem;
             background: white;
-            padding: 0.2rem 1rem 0.2rem 1.5rem;
+            padding: 0.2rem 1rem 0.2rem 1.2rem;
             border-radius: 40px;
             border: 1px solid #bdd8e8;
         }
@@ -76,43 +77,49 @@
             font-weight: 600;
             color: #0a4b6e;
             white-space: nowrap;
+            font-size: clamp(0.8rem, 2vw, 1rem);
         }
 
         .input-group input {
             border: none;
-            padding: 0.6rem 0.8rem;
+            padding: 0.5rem 0.8rem;
             font-size: 1rem;
             border-radius: 30px;
             background: #f0f7fe;
-            width: 150px;
+            width: 130px;
             text-align: center;
             outline: none;
         }
         .input-group input:focus { outline: 2px solid #2a86c7; background: white; }
-        .input-group input::placeholder { color: #aaa; opacity: 0.6; }
 
         button {
             background: #1e6b9b;
             border: none;
             color: white;
             font-weight: 600;
-            padding: 0.7rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             border-radius: 40px;
-            font-size: 1rem;
+            font-size: clamp(0.8rem, 2vw, 1rem);
             cursor: pointer;
-            box-shadow: 0 10px 15px -5px #1e6b9b80;
+            box-shadow: 0 8px 15px -5px #1e6b9b80;
             transition: 0.15s;
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.3rem;
             white-space: nowrap;
+            border: 1px solid transparent;
         }
         button:hover { background: #13507a; transform: scale(1.02); }
         button.secondary { background: #3f8db3; }
-        button.small { padding: 0.2rem 0.8rem; font-size: 0.8rem; margin-left: 0.2rem; }
-        button.success { background: #2e7d32; }
+        button.earning-btn { background: #2e7d32; }
+        button.reset-btn { background: #b34100; }
+        button.small { padding: 0.2rem 0.6rem; font-size: 0.75rem; }
 
-        .action-group { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+        .action-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
 
         .add-section-area {
             display: flex;
@@ -120,43 +127,43 @@
             flex-wrap: wrap;
             align-items: center;
             background: #dbeefb;
-            padding: 1rem 1.8rem;
+            padding: 0.8rem 1.5rem;
             border-radius: 50px;
             margin: 1rem 0;
         }
         .add-section-area input {
             border: none;
-            padding: 0.8rem 1.5rem;
+            padding: 0.7rem 1.2rem;
             border-radius: 40px;
-            flex: 1 1 250px;
+            flex: 1 1 200px;
             font-size: 1rem;
             background: white;
             border: 1px solid #9bc6de;
         }
-        .add-section-area input::placeholder { color: #888; opacity: 0.7; }
 
         .table-wrapper {
             overflow-x: auto;
             overflow-y: auto;
-            margin: 1.8rem 0 2rem;
-            border-radius: 2rem;
+            margin: 1.5rem 0 2rem;
+            border-radius: 1.5rem;
             background: white;
             box-shadow: 0 15px 30px #0000001a;
             max-height: 70vh;
             position: relative;
+            -webkit-overflow-scrolling: touch;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1400px;
-            font-size: 0.9rem;
+            min-width: 1200px;
+            font-size: 0.85rem;
         }
 
         th {
             background: #174e6f;
             color: white;
-            padding: 1rem 0.3rem;
+            padding: 0.8rem 0.2rem;
             text-align: center;
             border-right: 1px solid #30759c;
             white-space: nowrap;
@@ -168,22 +175,20 @@
             left: 0;
             z-index: 30;
         }
-        th:last-child { border-right: none; }
 
         td {
             border: 1px solid #cde0ec;
-            padding: 0.5rem 0.2rem;
+            padding: 0.4rem 0.1rem;
             text-align: center;
             background: #fdfdfe;
             vertical-align: middle;
         }
-        tbody tr:hover td { background: #ecf5fa; }
 
         .section-name {
             font-weight: 600;
             background: #e4f0f9;
             color: #043753;
-            padding: 0.6rem 0.8rem;
+            padding: 0.5rem;
             white-space: normal;
             word-break: break-word;
             border-right: 2px solid #b1d2e8;
@@ -191,49 +196,50 @@
             left: 0;
             background: #e4f0f9;
             z-index: 10;
-            min-width: 180px;
-            max-width: 250px;
+            min-width: 160px;
+            max-width: 220px;
         }
+
         .default-input {
-            width: 80px;
-            padding: 0.4rem;
+            width: 70px;
+            padding: 0.3rem;
             text-align: center;
             border: 1px solid #b0cde0;
             border-radius: 30px;
             font-weight: 500;
         }
-        .default-input::placeholder { color: #aaa; opacity: 0.6; }
+
         .month-cell {
             display: flex;
             flex-direction: row;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 2px;
             flex-wrap: wrap;
         }
         .month-input {
-            width: 90px;
-            padding: 0.4rem 0.2rem;
+            width: 75px;
+            padding: 0.3rem 0.1rem;
             text-align: center;
             border: 1px solid #b0cde0;
             border-radius: 30px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
-        .month-input::placeholder { color: #aaa; opacity: 0.5; }
         .month-checkbox {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             cursor: pointer;
             accent-color: #1e6b9b;
         }
         .apply-all-btn {
             background: #2c8395;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+            font-size: 0.65rem;
             border-radius: 30px;
             box-shadow: none;
             margin-left: 0.2rem;
         }
+
         .total-cell {
             background: #d7eaf5;
             font-weight: 700;
@@ -249,43 +255,69 @@
         }
 
         .summary-cards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
             margin: 2rem 0 1.5rem;
         }
         .card {
             background: white;
             border-radius: 2rem;
-            padding: 1.3rem 2rem;
-            flex: 1 1 180px;
+            padding: 1rem 0.8rem;
             box-shadow: 0 10px 20px #0000001a;
             border-left: 8px solid;
             text-align: center;
         }
-        .card .label { font-size: 1rem; color: #1b5477; }
-        .card .value { font-size: 2.1rem; font-weight: 700; color: #02263a; }
+        .card .label {
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            color: #1b5477;
+            white-space: nowrap;
+        }
+        .card .value {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-weight: 700;
+            color: #02263a;
+        }
 
         .warning {
             background: #ffeed9;
             color: #b34100;
-            padding: 1rem 2rem;
+            padding: 0.8rem 1.5rem;
             border-radius: 40px;
             font-weight: 600;
             text-align: center;
             border: 2px solid #ff9f4b;
+            margin: 1rem 0;
         }
-        .chart-container { max-width: 350px; margin: 2rem auto; background: white; padding: 1.5rem; border-radius: 2rem; }
+
+        .charts-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .chart-container {
+            background: white;
+            padding: 1.2rem;
+            border-radius: 2rem;
+            box-shadow: 0 10px 20px #0000001a;
+            flex: 1 1 350px;
+            max-width: 500px;
+        }
+        .chart-container canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+
         .action-after-table {
             display: flex;
             justify-content: center;
-            gap: 1rem;
-            margin: 1rem 0 0.5rem;
+            gap: 0.8rem;
+            margin: 1.5rem 0 1rem;
             flex-wrap: wrap;
         }
 
-        /* Section-wise totals */
         .section-totals-area {
             margin: 2rem 0;
             padding: 1.5rem;
@@ -296,55 +328,79 @@
         .section-totals-area h3 {
             color: #0b3954;
             margin-bottom: 1rem;
-            font-size: 1.4rem;
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
         }
         .totals-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
         .total-item {
             background: white;
-            padding: 0.8rem 1.2rem;
+            padding: 0.7rem 1rem;
             border-radius: 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 5px 10px #0000000a;
             border-left: 5px solid #2a7faa;
+            font-size: 0.9rem;
         }
-        .total-item.earning {
-            border-left-color: #2e7d32;
-        }
+        .total-item.earning { border-left-color: #2e7d32; }
         .total-item .sec-name {
             font-weight: 600;
             color: #043753;
-            white-space: normal;
             word-break: break-word;
             padding-right: 0.5rem;
         }
         .total-item .sec-amount {
             font-weight: 700;
             color: #1e6b9b;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             white-space: nowrap;
         }
-        .total-item.earning .sec-amount {
-            color: #2e7d32;
-        }
+        .total-item.earning .sec-amount { color: #2e7d32; }
 
-        .table-container {
-            margin-bottom: 2.5rem;
-        }
         .table-container h2 {
             color: #0b3954;
-            margin: 0 0 0.5rem 1rem;
+            margin: 0 0 0.5rem 0.8rem;
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
         }
-        .earning-header th {
-            background: #2e7d32;
+
+        @media (max-width: 600px) {
+            .input-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .year-budget {
+                justify-content: center;
+            }
+            .action-group {
+                justify-content: center;
+            }
+            .summary-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+            .card .label {
+                font-size: 0.7rem;
+            }
+            .card .value {
+                font-size: 1rem;
+            }
+            .month-input {
+                width: 60px;
+            }
         }
-        footer { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 2rem; }
+
+        @media (min-width: 1800px) {
+            .app-container {
+                padding: 2rem;
+            }
+            .table-wrapper {
+                max-height: 75vh;
+            }
+        }
     </style>
 </head>
 <body>
@@ -353,15 +409,11 @@
 
     <div class="input-panel">
         <div class="year-budget">
-            <div class="input-group"><label>চলতি বছর:</label><input type="number" id="runningYear" placeholder="0"></div>
-            <div class="input-group"><label> ডিরেক্ট বাজেট:</label><input type="number" id="mainBudget" placeholder="0"></div>
-        </div>
-        <div class="action-group">
-            <button id="setBudgetFromEarnings" class="success">📥 বাজেট = মোট আয়</button>
+            <div class="input-group"><label>চলতি বছর:</label><input type="number" id="runningYear" placeholder="2026"></div>
         </div>
     </div>
 
-    <!-- Earning Section (first) -->
+    <!-- Earning Section -->
     <div class="table-container">
         <h2>📈 আয়ের তালিকা</h2>
         <div class="add-section-area">
@@ -369,9 +421,10 @@
             <button id="addEarningBtn" class="secondary">➕ আয় যোগ</button>
         </div>
         <div class="table-wrapper" id="earningTableWrapper"></div>
+         <button id="earningResultBtn" class="earning-btn">📊 আয় ফলাফল</button>
     </div>
 
-    <!-- Expense Section (second) -->
+    <!-- Expense Section -->
     <div class="table-container">
         <h2>📉 খরচের তালিকা</h2>
         <div class="add-section-area">
@@ -382,22 +435,23 @@
     </div>
 
     <div class="action-after-table">
-        <button id="resultBtn">📊 ফলাফল </button>
+       
+        <button id="fullResultBtn">📈 সব ফলাফল</button>
         <button id="pdfBtn" class="secondary">📇 PDF</button>
         <button id="saveLocalBtn">💾 সেভ</button>
-        <button id="loadLocalBtn">↩️ রিসেট</button>
+        <button id="resetBtn" class="reset-btn">🔄 রিসেট</button>
     </div>
 
     <div class="summary-cards" id="summaryCards">
         <div class="card" style="border-left-color:#2e7d32;"><div class="label">📈 মোট আয়</div><div class="value" id="totalEarningDisplay">০</div></div>
         <div class="card" style="border-left-color:#2a7faa;"><div class="label">📉 মোট খরচ</div><div class="value" id="totalExpenseDisplay">০</div></div>
-        <div class="card" style="border-left-color:#e68c2e;"><div class="label">💰 বাজেট</div><div class="value" id="mainBudgetDisplay">০</div></div>
-        <div class="card" style="border-left-color:#4caf7a;"><div class="label">✨ উদ্বৃত্ত (বাজেট-খরচ)</div><div class="value" id="remainingDisplay">০</div></div>
+        <div class="card" style="border-left-color:#e68c2e;"><div class="label">💰 বাজেট (আয়)</div><div class="value" id="mainBudgetDisplay">০</div></div>
+        <div class="card" style="border-left-color:#4caf7a;"><div class="label">✨ উদ্বৃত্ত (আয়-খরচ)</div><div class="value" id="remainingDisplay">০</div></div>
         <div class="card" style="border-left-color:#bf4b4b;"><div class="label">📈 ব্যবহৃত %</div><div class="value" id="percentDisplay">০%</div></div>
     </div>
-    <div id="warningArea" class="warning" style="display: none;">⚠️ সতর্কতা: খরচ বাজেট ছাড়িয়ে গেছে!</div>
+    <div id="warningArea" class="warning" style="display: none;">⚠️ সতর্কতা: খরচ আয়ের চেয়ে বেশি!</div>
 
-    <!-- Separate section-wise totals -->
+    <!-- Section-wise totals -->
     <div class="section-totals-area" id="sectionTotalsArea">
         <h3>📋 আয় খাত সমূহ</h3>
         <div id="earningTotalsGrid" class="totals-grid"></div>
@@ -405,179 +459,90 @@
         <div id="expenseTotalsGrid" class="totals-grid"></div>
     </div>
 
-    <div class="chart-container"><canvas id="budgetChart" width="300" height="300"></canvas></div>
+    <!-- Charts Row -->
+    <div class="charts-row">
+        <div class="chart-container">
+            <canvas id="budgetChart" width="300" height="300"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="monthlyChart" width="400" height="300"></canvas>
+        </div>
+    </div>
 </div>
 
 <script>
 (function() {
     const monthsBangla = ['জানুয়ারী','ফেব্রুয়ারী','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
 
-    // Default sections
     const expenseDefaultSections = [
-        'ঘর ভাড়া',
-        'ইলেক্ট্রিক বিল',
-        'ওয়াইফাই বিল',
-        'নাস্তা বিল ও অভিভাবক সমাবেশ',
-        'প্রকাশনা বিল',
-        'স্টেশনারি বিল',
-        'শিক্ষক বেতন ও ভাতা',
-        'ঋণ শোধ',
-        'আইটি বিল',
-        'ইলেকট্রিক ও ইলেক্ট্রনিক সার্ভিস বিল',
-        'বার্ষিক ক্রীড়া ও ক্লাস পার্টি',
-        'AGM',
-        'কমিটি বৈঠক ও Audit',
-        'আইডি কার্ড',
-        'বই ক্রয়',
-        'সফটওয়্যার',
-        'ভর্তি প্রচার',
-        'ডেকরেশন'
+        'ঘর ভাড়া', 'ইলেক্ট্রিক বিল', 'ওয়াইফাই বিল', 'নাস্তা বিল ও অভিভাবক সমাবেশ',
+        'প্রকাশনা বিল', 'স্টেশনারি বিল', 'শিক্ষক বেতন ও ভাতা', 'ঋণ শোধ',
+        'আইটি বিল', 'ইলেকট্রিক ও ইলেক্ট্রনিক সার্ভিস বিল', 'বার্ষিক ক্রীড়া ও ক্লাস পার্টি',
+        'AGM', 'কমিটি বৈঠক ও Audit', 'আইডি কার্ড', 'বই ক্রয়', 'সফটওয়্যার',
+        'ভর্তি প্রচার', 'ডেকরেশন'
     ];
 
     const earningDefaultSections = [
-        'গত সালের উদবৃত',
-        'বই খাতা বিক্রি',
-        'ভর্তি ফর্ম বিক্রি',
-        'ঘরভাড়া',
-        'ক্রীড়া ফি',
-        'বেতন',
-        'ভর্তি ফি',
-        'পরিক্ষার ফি',
-        'টিসি ফি'
+        'গত সালের উদবৃত', 'বই খাতা বিক্রি', 'ভর্তি ফর্ম বিক্রি', 'ঘরভাড়া',
+        'ক্রীড়া ফি', 'বেতন', 'ভর্তি ফি', 'পরিক্ষার ফি', 'টিসি ফি'
     ];
 
     let expenseTbody, earningTbody;
-    let expenseTable, earningTable;
-    let chartInstance = null;
+    let chartInstance = null, monthlyChartInstance = null;
 
-    // Helper: sum space-separated numbers
     function sumOfSpaceString(str) {
         if (!str.trim()) return 0;
-        const parts = str.trim().split(/\s+/);
-        let total = 0;
-        for (let part of parts) {
-            let num = parseFloat(part);
-            if (!isNaN(num)) total += num;
-        }
-        return total;
+        return str.trim().split(/\s+/).reduce((acc, part) => acc + (parseFloat(part) || 0), 0);
     }
 
-    // Build both tables
     function buildTables() {
-        // Earning table (first)
+        // Earning table
         const earningWrapper = document.getElementById('earningTableWrapper');
         earningWrapper.innerHTML = '';
-        earningTable = document.createElement('table');
+        const earningTable = document.createElement('table');
         earningTable.id = 'earningTable';
-
-        const theadEarn = document.createElement('thead');
-        const headerRowEarn = document.createElement('tr');
-        const th1Earn = document.createElement('th'); th1Earn.textContent = 'আয় খাত'; headerRowEarn.appendChild(th1Earn);
-        const thDefEarn = document.createElement('th'); thDefEarn.textContent = 'ডিফল্ট (টাকা)'; headerRowEarn.appendChild(thDefEarn);
-        monthsBangla.forEach(m => {
-            const th = document.createElement('th'); th.textContent = m; headerRowEarn.appendChild(th);
-        });
-        const thTotalEarn = document.createElement('th'); thTotalEarn.textContent = 'মোট (মাস)'; headerRowEarn.appendChild(thTotalEarn);
-        theadEarn.appendChild(headerRowEarn);
-        earningTable.appendChild(theadEarn);
-
-        earningTbody = document.createElement('tbody');
-        earningTable.appendChild(earningTbody);
-
-        const tfootEarn = document.createElement('tfoot');
-        const footRowEarn = document.createElement('tr');
-        const tdFirstEarn = document.createElement('td'); tdFirstEarn.textContent = '📌 মাস মোট'; footRowEarn.appendChild(tdFirstEarn);
-        const tdDefPlaceholderEarn = document.createElement('td'); tdDefPlaceholderEarn.textContent = '—'; footRowEarn.appendChild(tdDefPlaceholderEarn);
-        for (let i = 0; i < 12; i++) {
-            const td = document.createElement('td'); td.textContent = '০'; td.id = `earnMonthTotal${i}`; footRowEarn.appendChild(td);
-        }
-        const tdYearlyEarn = document.createElement('td'); tdYearlyEarn.textContent = '০'; tdYearlyEarn.id = 'earnYearlyTotalFoot'; footRowEarn.appendChild(tdYearlyEarn);
-        tfootEarn.appendChild(footRowEarn);
-        earningTable.appendChild(tfootEarn);
+        earningTable.innerHTML = `
+            <thead><tr><th>আয় খাত</th><th>ডিফল্ট (টাকা)</th>${monthsBangla.map(m => `<th>${m}</th>`).join('')}<th>মোট (মাস)</th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td>📌 মাস মোট</td><td>—</td>${monthsBangla.map((_, i) => `<td id="earnMonthTotal${i}">০</td>`).join('')}<td id="earnYearlyTotalFoot">০</td></tr></tfoot>
+        `;
         earningWrapper.appendChild(earningTable);
+        earningTbody = earningTable.querySelector('tbody');
 
         // Expense table
         const expenseWrapper = document.getElementById('expenseTableWrapper');
         expenseWrapper.innerHTML = '';
-        expenseTable = document.createElement('table');
+        const expenseTable = document.createElement('table');
         expenseTable.id = 'expenseTable';
-
-        const theadExp = document.createElement('thead');
-        const headerRowExp = document.createElement('tr');
-        const th1 = document.createElement('th'); th1.textContent = 'খরচ খাত'; headerRowExp.appendChild(th1);
-        const thDef = document.createElement('th'); thDef.textContent = 'ডিফল্ট (টাকা)'; headerRowExp.appendChild(thDef);
-        monthsBangla.forEach(m => {
-            const th = document.createElement('th'); th.textContent = m; headerRowExp.appendChild(th);
-        });
-        const thTotal = document.createElement('th'); thTotal.textContent = 'মোট (মাস)'; headerRowExp.appendChild(thTotal);
-        theadExp.appendChild(headerRowExp);
-        expenseTable.appendChild(theadExp);
-
-        expenseTbody = document.createElement('tbody');
-        expenseTable.appendChild(expenseTbody);
-
-        const tfootExp = document.createElement('tfoot');
-        const footRowExp = document.createElement('tr');
-        const tdFirstExp = document.createElement('td'); tdFirstExp.textContent = '📌 মাস মোট'; footRowExp.appendChild(tdFirstExp);
-        const tdDefPlaceholderExp = document.createElement('td'); tdDefPlaceholderExp.textContent = '—'; footRowExp.appendChild(tdDefPlaceholderExp);
-        for (let i = 0; i < 12; i++) {
-            const td = document.createElement('td'); td.textContent = '০'; td.id = `expMonthTotal${i}`; footRowExp.appendChild(td);
-        }
-        const tdYearlyExp = document.createElement('td'); tdYearlyExp.textContent = '০'; tdYearlyExp.id = 'expYearlyTotalFoot'; footRowExp.appendChild(tdYearlyExp);
-        tfootExp.appendChild(footRowExp);
-        expenseTable.appendChild(tfootExp);
+        expenseTable.innerHTML = `
+            <thead><tr><th>খরচ খাত</th><th>ডিফল্ট (টাকা)</th>${monthsBangla.map(m => `<th>${m}</th>`).join('')}<th>মোট (মাস)</th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td>📌 মাস মোট</td><td>—</td>${monthsBangla.map((_, i) => `<td id="expMonthTotal${i}">০</td>`).join('')}<td id="expYearlyTotalFoot">০</td></tr></tfoot>
+        `;
         expenseWrapper.appendChild(expenseTable);
+        expenseTbody = expenseTable.querySelector('tbody');
     }
 
-    // Add a row to a specific tbody
     function addRow(tbody, sectionName, defaultVal = '') {
         const row = tbody.insertRow();
-
-        const nameCell = row.insertCell();
-        nameCell.textContent = sectionName;
-        nameCell.className = 'section-name';
-
+        const nameCell = row.insertCell(); nameCell.textContent = sectionName; nameCell.className = 'section-name';
         const defCell = row.insertCell();
         const defInput = document.createElement('input');
-        defInput.type = 'number';
-        defInput.step = 'any';
-        defInput.value = (defaultVal === '' ? '' : defaultVal);
-        defInput.placeholder = '0';
-        defInput.classList.add('default-input');
+        defInput.type = 'number'; defInput.step = 'any'; defInput.value = defaultVal; defInput.placeholder = '0'; defInput.classList.add('default-input');
         defCell.appendChild(defInput);
-
-        const allDefaultBtn = document.createElement('button');
-        allDefaultBtn.textContent = '📌 All';
-        allDefaultBtn.classList.add('small', 'apply-all-btn');
-        allDefaultBtn.type = 'button';
-        allDefaultBtn.title = 'সব মাসের চেকবক্স টিক করে ডিফল্ট মান বসান';
+        const allDefaultBtn = document.createElement('button'); allDefaultBtn.textContent = '📌 All'; allDefaultBtn.classList.add('small', 'apply-all-btn'); allDefaultBtn.type = 'button';
         defCell.appendChild(allDefaultBtn);
 
         const monthCells = [];
         for (let m = 0; m < 12; m++) {
             const cell = row.insertCell();
-            const container = document.createElement('div');
-            container.className = 'month-cell';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.classList.add('month-checkbox');
-            checkbox.dataset.month = m;
-
-            const inp = document.createElement('input');
-            inp.type = 'text';
-            inp.placeholder = '০';
-            inp.classList.add('month-input');
-            inp.dataset.month = m;
-            inp.dataset.custom = '';
-
-            container.appendChild(checkbox);
-            container.appendChild(inp);
-            cell.appendChild(container);
-
+            const container = document.createElement('div'); container.className = 'month-cell';
+            const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.classList.add('month-checkbox');
+            const inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = '০'; inp.classList.add('month-input'); inp.dataset.custom = '';
+            container.appendChild(checkbox); container.appendChild(inp); cell.appendChild(container);
             monthCells.push({ checkbox, inp });
 
-            checkbox.addEventListener('change', function(e) {
+            checkbox.addEventListener('change', function() {
                 const rowDef = parseFloat(defInput.value) || 0;
                 if (this.checked) {
                     inp.dataset.custom = inp.value;
@@ -585,11 +550,7 @@
                     inp.disabled = true;
                 } else {
                     inp.disabled = false;
-                    if (inp.dataset.custom && inp.dataset.custom !== '') {
-                        inp.value = inp.dataset.custom;
-                    } else {
-                        inp.value = '';
-                    }
+                    inp.value = inp.dataset.custom || '';
                 }
             });
         }
@@ -608,24 +569,16 @@
             });
         });
 
-        const totalCell = row.insertCell();
-        totalCell.textContent = '০';
-        totalCell.className = 'total-cell section-total';
+        const totalCell = row.insertCell(); totalCell.textContent = '০'; totalCell.className = 'total-cell';
     }
 
-    // Load default sections
-    function loadDefaultEarning() {
-        earningDefaultSections.forEach(name => addRow(earningTbody, name, ''));
-    }
-    function loadDefaultExpense() {
-        expenseDefaultSections.forEach(name => addRow(expenseTbody, name, ''));
-    }
+    function loadDefaultEarning() { earningDefaultSections.forEach(name => addRow(earningTbody, name, '')); }
+    function loadDefaultExpense() { expenseDefaultSections.forEach(name => addRow(expenseTbody, name, '')); }
 
-    // Calculate all and update UI
-    function calculateAll() {
-        if (!expenseTbody || !earningTbody) return;
+    // Calculate only earnings (update earning totals, budget, and charts using current expense data)
+    function calculateEarningOnly() {
+        if (!earningTbody) return;
 
-        // Earning calculation
         const earnMonthSums = new Array(12).fill(0);
         let totalEarning = 0;
         const earnRows = earningTbody.rows;
@@ -636,31 +589,92 @@
             const defInput = row.querySelector('.default-input');
             const defaultVal = parseFloat(defInput.value) || 0;
             const monthContainers = row.querySelectorAll('.month-cell');
-            let rowSum = 0;
-            let paidMonths = 0;
+            let rowSum = 0, paidMonths = 0;
 
             monthContainers.forEach((container, idx) => {
                 const checkbox = container.querySelector('.month-checkbox');
                 const inp = container.querySelector('.month-input');
-                let val = 0;
-                if (checkbox.checked) {
-                    val = defaultVal;
-                } else {
-                    val = sumOfSpaceString(inp.value);
-                }
+                let val = checkbox.checked ? defaultVal : sumOfSpaceString(inp.value);
                 rowSum += val;
                 earnMonthSums[idx] += val;
                 totalEarning += val;
                 if (val !== 0) paidMonths++;
             });
 
-            const cells = row.cells;
-            const totalCell = cells[cells.length - 1];
-            totalCell.textContent = rowSum.toFixed(2) + ` (${paidMonths} মাস)`;
-            earningTotals.push({ name: cells[0].textContent.trim(), total: rowSum });
+            row.cells[row.cells.length - 1].textContent = rowSum.toFixed(2) + ` (${paidMonths} মাস)`;
+            earningTotals.push({ name: row.cells[0].textContent.trim(), total: rowSum });
         }
 
-        // Expense calculation
+        for (let m = 0; m < 12; m++) {
+            const foot = document.getElementById(`earnMonthTotal${m}`);
+            if (foot) foot.textContent = earnMonthSums[m].toFixed(2);
+        }
+        document.getElementById('earnYearlyTotalFoot').textContent = totalEarning.toFixed(2);
+
+        // Update budget displays
+        document.getElementById('totalEarningDisplay').innerText = totalEarning.toFixed(2);
+        // Budget = total earning
+        const budget = totalEarning;
+        document.getElementById('mainBudgetDisplay').innerText = budget.toFixed(2);
+
+        // Get current expense total from display (already calculated)
+        const totalExpense = parseFloat(document.getElementById('totalExpenseDisplay').innerText) || 0;
+        const remaining = budget - totalExpense;
+        const percent = budget > 0 ? (totalExpense / budget) * 100 : 0;
+        document.getElementById('remainingDisplay').innerText = remaining.toFixed(2);
+        document.getElementById('percentDisplay').innerText = percent.toFixed(2) + '%';
+        document.getElementById('warningArea').style.display = totalExpense > budget ? 'block' : 'none';
+
+        // Update charts with new budget but keep expense data
+        const expMonthSums = [];
+        for (let m = 0; m < 12; m++) {
+            const expFoot = document.getElementById(`expMonthTotal${m}`);
+            expMonthSums.push(parseFloat(expFoot?.innerText) || 0);
+        }
+        updateCharts(budget, totalExpense, earnMonthSums, expMonthSums);
+
+        // Update earning totals grid
+        const earnGrid = document.getElementById('earningTotalsGrid');
+        earnGrid.innerHTML = '';
+        earningTotals.forEach(item => {
+            const div = document.createElement('div'); div.className = 'total-item earning';
+            div.innerHTML = `<span class="sec-name">${item.name}</span> <span class="sec-amount">${item.total.toFixed(2)}</span>`;
+            earnGrid.appendChild(div);
+        });
+    }
+
+    // Full calculation (earnings + expenses)
+    function calculateAll() {
+        if (!expenseTbody || !earningTbody) return;
+
+        // Earnings
+        const earnMonthSums = new Array(12).fill(0);
+        let totalEarning = 0;
+        const earnRows = earningTbody.rows;
+        const earningTotals = [];
+
+        for (let r = 0; r < earnRows.length; r++) {
+            const row = earnRows[r];
+            const defInput = row.querySelector('.default-input');
+            const defaultVal = parseFloat(defInput.value) || 0;
+            const monthContainers = row.querySelectorAll('.month-cell');
+            let rowSum = 0, paidMonths = 0;
+
+            monthContainers.forEach((container, idx) => {
+                const checkbox = container.querySelector('.month-checkbox');
+                const inp = container.querySelector('.month-input');
+                let val = checkbox.checked ? defaultVal : sumOfSpaceString(inp.value);
+                rowSum += val;
+                earnMonthSums[idx] += val;
+                totalEarning += val;
+                if (val !== 0) paidMonths++;
+            });
+
+            row.cells[row.cells.length - 1].textContent = rowSum.toFixed(2) + ` (${paidMonths} মাস)`;
+            earningTotals.push({ name: row.cells[0].textContent.trim(), total: rowSum });
+        }
+
+        // Expenses
         const expMonthSums = new Array(12).fill(0);
         let totalExpense = 0;
         const expRows = expenseTbody.rows;
@@ -671,62 +685,48 @@
             const defInput = row.querySelector('.default-input');
             const defaultVal = parseFloat(defInput.value) || 0;
             const monthContainers = row.querySelectorAll('.month-cell');
-            let rowSum = 0;
-            let paidMonths = 0;
+            let rowSum = 0, paidMonths = 0;
 
             monthContainers.forEach((container, idx) => {
                 const checkbox = container.querySelector('.month-checkbox');
                 const inp = container.querySelector('.month-input');
-                let val = 0;
-                if (checkbox.checked) {
-                    val = defaultVal;
-                } else {
-                    val = sumOfSpaceString(inp.value);
-                }
+                let val = checkbox.checked ? defaultVal : sumOfSpaceString(inp.value);
                 rowSum += val;
                 expMonthSums[idx] += val;
                 totalExpense += val;
                 if (val !== 0) paidMonths++;
             });
 
-            const cells = row.cells;
-            const totalCell = cells[cells.length - 1];
-            totalCell.textContent = rowSum.toFixed(2) + ` (${paidMonths} মাস)`;
-            expenseTotals.push({ name: cells[0].textContent.trim(), total: rowSum });
+            row.cells[row.cells.length - 1].textContent = rowSum.toFixed(2) + ` (${paidMonths} মাস)`;
+            expenseTotals.push({ name: row.cells[0].textContent.trim(), total: rowSum });
         }
 
         // Update footers
         for (let m = 0; m < 12; m++) {
-            const earnFoot = document.getElementById(`earnMonthTotal${m}`);
-            if (earnFoot) earnFoot.textContent = earnMonthSums[m].toFixed(2);
-            const expFoot = document.getElementById(`expMonthTotal${m}`);
-            if (expFoot) expFoot.textContent = expMonthSums[m].toFixed(2);
+            document.getElementById(`earnMonthTotal${m}`).textContent = earnMonthSums[m].toFixed(2);
+            document.getElementById(`expMonthTotal${m}`).textContent = expMonthSums[m].toFixed(2);
         }
         document.getElementById('earnYearlyTotalFoot').textContent = totalEarning.toFixed(2);
         document.getElementById('expYearlyTotalFoot').textContent = totalExpense.toFixed(2);
 
-        const mainBudgetInput = document.getElementById('mainBudget');
-        const mainBudget = parseFloat(mainBudgetInput.value) || 0;
-        const remaining = mainBudget - totalExpense;
-        const percent = mainBudget > 0 ? (totalExpense / mainBudget) * 100 : 0;
+        const budget = totalEarning;
+        const remaining = budget - totalExpense;
+        const percent = budget > 0 ? (totalExpense / budget) * 100 : 0;
 
         document.getElementById('totalEarningDisplay').innerText = totalEarning.toFixed(2);
         document.getElementById('totalExpenseDisplay').innerText = totalExpense.toFixed(2);
-        document.getElementById('mainBudgetDisplay').innerText = mainBudget.toFixed(2);
+        document.getElementById('mainBudgetDisplay').innerText = budget.toFixed(2);
         document.getElementById('remainingDisplay').innerText = remaining.toFixed(2);
         document.getElementById('percentDisplay').innerText = percent.toFixed(2) + '%';
+        document.getElementById('warningArea').style.display = totalExpense > budget ? 'block' : 'none';
 
-        const warnDiv = document.getElementById('warningArea');
-        warnDiv.style.display = totalExpense > mainBudget ? 'block' : 'none';
+        updateCharts(budget, totalExpense, earnMonthSums, expMonthSums);
 
-        updateChart(mainBudget, totalExpense);
-
-        // Display separate grids
+        // Update grids
         const earnGrid = document.getElementById('earningTotalsGrid');
         earnGrid.innerHTML = '';
         earningTotals.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'total-item earning';
+            const div = document.createElement('div'); div.className = 'total-item earning';
             div.innerHTML = `<span class="sec-name">${item.name}</span> <span class="sec-amount">${item.total.toFixed(2)}</span>`;
             earnGrid.appendChild(div);
         });
@@ -734,125 +734,76 @@
         const expGrid = document.getElementById('expenseTotalsGrid');
         expGrid.innerHTML = '';
         expenseTotals.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'total-item';
+            const div = document.createElement('div'); div.className = 'total-item';
             div.innerHTML = `<span class="sec-name">${item.name}</span> <span class="sec-amount">${item.total.toFixed(2)}</span>`;
             expGrid.appendChild(div);
         });
     }
 
-    // Update chart
-    function updateChart(budget, expense) {
+    function updateCharts(budget, expense, earnMonthly, expMonthly) {
         const ctx = document.getElementById('budgetChart').getContext('2d');
         if (chartInstance) chartInstance.destroy();
         const remaining = Math.max(0, budget - expense);
         const used = Math.min(expense, budget);
         const over = expense > budget ? expense - budget : 0;
-        let data = [], labels = [], colors = [];
+        let data, labels, colors;
         if (budget <= 0) {
-            data = [1]; labels = ['বাজেট নাই']; colors = ['#aaa'];
+            data = [1]; labels = ['আয় নাই']; colors = ['#aaa'];
         } else if (expense <= budget) {
-            data = [used, remaining]; labels = ['ব্যয়', 'অবশিষ্ট']; colors = ['#f39c12', '#2ecc71'];
+            data = [used, remaining]; labels = ['খরচ', 'বাকি']; colors = ['#f39c12', '#2ecc71'];
         } else {
-            data = [budget, over]; labels = ['বাজেট', 'অতিরিক্ত']; colors = ['#e67e22', '#e74c3c'];
+            data = [budget, over]; labels = ['আয়', 'অতিরিক্ত খরচ']; colors = ['#e67e22', '#e74c3c'];
         }
         chartInstance = new Chart(ctx, {
             type: 'doughnut',
-            data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 0 }] },
+            data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
             options: { responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+        });
+
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        if (monthlyChartInstance) monthlyChartInstance.destroy();
+        monthlyChartInstance = new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: monthsBangla,
+                datasets: [
+                    { label: 'আয়', data: earnMonthly, backgroundColor: '#2e7d32' },
+                    { label: 'খরচ', data: expMonthly, backgroundColor: '#c0392b' }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
         });
     }
 
-    // Save both tables to localStorage
+    // Save to localStorage
     function saveToLocal() {
-        function serializeTbody(tbody) {
-            const rows = tbody.rows;
-            const data = [];
-            for (let r = 0; r < rows.length; r++) {
-                const row = rows[r];
-                const name = row.cells[0].textContent;
-                const defInput = row.querySelector('.default-input');
-                const defVal = parseFloat(defInput.value) || 0;
-                const monthCells = row.querySelectorAll('.month-cell');
-                const monthsData = [];
-                monthCells.forEach(cell => {
-                    const checkbox = cell.querySelector('.month-checkbox');
+        function serialize(tbody) {
+            return Array.from(tbody.rows).map(row => ({
+                name: row.cells[0].textContent,
+                default: parseFloat(row.querySelector('.default-input').value) || 0,
+                months: Array.from(row.querySelectorAll('.month-cell')).map(cell => {
+                    const cb = cell.querySelector('.month-checkbox');
                     const inp = cell.querySelector('.month-input');
-                    monthsData.push({
-                        useDefault: checkbox.checked,
-                        rawString: inp.value,
-                        savedCustom: inp.dataset.custom || ''
-                    });
-                });
-                data.push({ name, default: defVal, months: monthsData });
-            }
-            return data;
+                    return { useDefault: cb.checked, rawString: inp.value, savedCustom: inp.dataset.custom || '' };
+                })
+            }));
         }
-        const expenseData = serializeTbody(expenseTbody);
-        const earningData = serializeTbody(earningTbody);
-        localStorage.setItem('expenseAppData', JSON.stringify(expenseData));
-        localStorage.setItem('earningAppData', JSON.stringify(earningData));
-        alert('✅ সব ডাটা সংরক্ষিত');
+        localStorage.setItem('expenseAppData', JSON.stringify(serialize(expenseTbody)));
+        localStorage.setItem('earningAppData', JSON.stringify(serialize(earningTbody)));
+        alert('✅ সংরক্ষিত');
     }
 
-    // Load both tables from localStorage
-    function loadFromLocal() {
-        const expenseSaved = localStorage.getItem('expenseAppData');
-        const earningSaved = localStorage.getItem('earningAppData');
-        if (!expenseSaved || !earningSaved) { alert('❌ কোনো ডাটা নেই'); return; }
-        try {
-            const expenseData = JSON.parse(expenseSaved);
-            const earningData = JSON.parse(earningSaved);
-
-            // Clear tables
-            while (expenseTbody.rows.length > 0) expenseTbody.deleteRow(0);
-            while (earningTbody.rows.length > 0) earningTbody.deleteRow(0);
-
-            expenseData.forEach(item => addRow(expenseTbody, item.name, item.default.toString()));
-            earningData.forEach(item => addRow(earningTbody, item.name, item.default.toString()));
-
-            // Restore month states
-            function restoreTbody(tbody, data) {
-                const newRows = tbody.rows;
-                for (let i = 0; i < data.length; i++) {
-                    const row = newRows[i];
-                    const monthCells = row.querySelectorAll('.month-cell');
-                    const defInput = row.querySelector('.default-input');
-                    const item = data[i];
-                    item.months.forEach((mData, idx) => {
-                        if (monthCells[idx]) {
-                            const checkbox = monthCells[idx].querySelector('.month-checkbox');
-                            const inp = monthCells[idx].querySelector('.month-input');
-                            checkbox.checked = mData.useDefault;
-                            inp.value = mData.rawString;
-                            inp.dataset.custom = mData.savedCustom || '';
-                            inp.disabled = mData.useDefault;
-                            if (mData.useDefault) {
-                                const defVal = parseFloat(defInput.value) || 0;
-                                inp.value = defVal.toString();
-                            }
-                        }
-                    });
-                }
-            }
-            restoreTbody(expenseTbody, expenseData);
-            restoreTbody(earningTbody, earningData);
-
-            calculateAll();
-            alert('✅ ডাটা পুনরুদ্ধার');
-        } catch (e) { alert('ডাটা দুর্নীতিগ্রস্ত'); }
+    // Hard reset: clear storage and reload
+    function hardReset() {
+        if (confirm('সব ডাটা মুছে ফেলবেন? পৃষ্ঠা রিফ্রেশ হবে।')) {
+            localStorage.removeItem('expenseAppData');
+            localStorage.removeItem('earningAppData');
+            location.reload();
+        }
     }
 
-    // Set budget from total earnings
-    function setBudgetFromEarnings() {
-        const totalEarning = parseFloat(document.getElementById('totalEarningDisplay').innerText) || 0;
-        document.getElementById('mainBudget').value = totalEarning.toFixed(2);
-        calculateAll();
-    }
-
-    // Map Bangla section name to English for PDF (based on default lists)
-    function mapSectionName(name, isExpense) {
-        // Expense mapping
+    // Map for PDF (unchanged)
+    function mapSectionName(name, isExpense) { /* ... same as before ... */ 
         if (isExpense) {
             switch(name) {
                 case 'ঘর ভাড়া': return 'Rent';
@@ -873,10 +824,9 @@
                 case 'সফটওয়্যার': return 'Software';
                 case 'ভর্তি প্রচার': return 'Admission Promotion';
                 case 'ডেকরেশন': return 'Decoration';
-                default: return name; // keep as is for custom sections
+                default: return name;
             }
         } else {
-            // Earning mapping
             switch(name) {
                 case 'গত সালের উদবৃত': return 'Previous Year Surplus';
                 case 'বই খাতা বিক্রি': return 'Book & Notebook Sales';
@@ -892,220 +842,129 @@
         }
     }
 
-    // PDF generation with earning first, then expense
     function generatePDF() {
         calculateAll();
-
-        const year = document.getElementById('runningYear').value || 'N/A';
-        const mainBudget = parseFloat(document.getElementById('mainBudget').value) || 0;
+        const year = document.getElementById('runningYear').value || new Date().getFullYear();
+        const mainBudget = parseFloat(document.getElementById('totalEarningDisplay').innerText) || 0;
         const totalExpense = parseFloat(document.getElementById('totalExpenseDisplay').innerText) || 0;
-        const totalEarning = parseFloat(document.getElementById('totalEarningDisplay').innerText) || 0;
+        const totalEarning = mainBudget;
         const remaining = mainBudget - totalExpense;
         const status = mainBudget > 0 ? (totalExpense / mainBudget * 100).toFixed(2) + '%' : 'N/A';
 
-        const monthsEnglish = [
-            "January","February","March","April","May","June",
-            "July","August","September","October","November","December"
-        ];
+        const monthsEnglish = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-        // Helper to extract sections from a tbody with mapping
         function extractSections(tbody, isExpense) {
-            const rows = tbody.rows;
-            const sections = [];
-            for (let r = 0; r < rows.length; r++) {
-                const originalName = rows[r].cells[0].textContent.trim();
-                const sectionName = mapSectionName(originalName, isExpense);
-                const monthCells = rows[r].querySelectorAll('.month-cell');
-                const monthlyValues = [];
-                for (let m = 0; m < 12; m++) {
-                    const container = monthCells[m];
-                    const checkbox = container.querySelector('.month-checkbox');
-                    const inp = container.querySelector('.month-input');
-                    let val = 0;
-                    if (checkbox.checked) {
-                        val = parseFloat(rows[r].querySelector('.default-input').value) || 0;
-                    } else {
-                        const raw = inp.value.trim();
-                        if(raw) {
-                            const parts = raw.split(/\s+/);
-                            for(let p of parts){
-                                const num = parseFloat(p);
-                                if(!isNaN(num)) val += num;
-                            }
-                        }
-                    }
-                    monthlyValues.push(val);
-                }
-                sections.push({ name: sectionName, monthly: monthlyValues });
-            }
-            return sections;
+            return Array.from(tbody.rows).map(row => {
+                const name = mapSectionName(row.cells[0].textContent.trim(), isExpense);
+                const monthCells = row.querySelectorAll('.month-cell');
+                const monthly = Array.from(monthCells).map((cell, idx) => {
+                    const cb = cell.querySelector('.month-checkbox');
+                    const inp = cell.querySelector('.month-input');
+                    if (cb.checked) return parseFloat(row.querySelector('.default-input').value) || 0;
+                    return sumOfSpaceString(inp.value);
+                });
+                return { name, monthly };
+            });
         }
 
         const earningSections = extractSections(earningTbody, false);
         const expenseSections = extractSections(expenseTbody, true);
-
         const content = [];
 
-        // Helper to add tables for a set of sections
-        function addTablesForSections(sections, title) {
-            if (sections.length === 0) return;
-            content.push({ text: title, style: 'subheader', margin: [0, 10, 0, 5] });
-            const monthChunks = [{ start: 0, end: 5 }, { start: 6, end: 11 }];
-            const pageSize = 25;
-            monthChunks.forEach((chunk, chunkIndex) => {
-                for (let i = 0; i < sections.length; i += pageSize) {
-                    const secChunk = sections.slice(i, i + pageSize);
-                    if (secChunk.length === 0) continue;
-
-                    const tableBody = [];
-                    const headerRow = ['Section Name', ...monthsEnglish.slice(chunk.start, chunk.end + 1), 'Section Total'];
-                    tableBody.push(headerRow);
-
+        function addTables(sections, title) {
+            if (!sections.length) return;
+            content.push({ text: title, style: 'subheader', margin: [0,10,0,5] });
+            const chunks = [{ start: 0, end: 5 }, { start: 6, end: 11 }];
+            chunks.forEach((chunk, ci) => {
+                for (let i = 0; i < sections.length; i += 25) {
+                    const secChunk = sections.slice(i, i+25);
+                    if (!secChunk.length) return;
+                    const body = [];
+                    const header = ['Section Name', ...monthsEnglish.slice(chunk.start, chunk.end+1), 'Section Total'];
+                    body.push(header);
                     secChunk.forEach(sec => {
-                        const secRow = [sec.name];
-                        const secTotal = sec.monthly.slice(chunk.start, chunk.end + 1).reduce((a,b)=>a+b,0);
-                        sec.monthly.slice(chunk.start, chunk.end + 1).forEach(val => secRow.push(val.toFixed(2)));
-                        secRow.push(secTotal.toFixed(2));
-                        tableBody.push(secRow);
+                        const row = [{ text: sec.name, bold: true }];
+                        const total = sec.monthly.slice(chunk.start, chunk.end+1).reduce((a,b)=>a+b,0);
+                        sec.monthly.slice(chunk.start, chunk.end+1).forEach(v => row.push(v.toFixed(2)));
+                        row.push(total.toFixed(2));
+                        body.push(row);
                     });
-
-                    const monthlyTotalsRow = ['Monthly Total'];
+                    const monthlyTotals = ['Monthly Total'];
                     for (let m = chunk.start; m <= chunk.end; m++) {
-                        const monthTotal = secChunk.reduce((sum, sec) => sum + sec.monthly[m], 0);
-                        monthlyTotalsRow.push(monthTotal.toFixed(2));
+                        monthlyTotals.push(secChunk.reduce((sum, sec) => sum + sec.monthly[m], 0).toFixed(2));
                     }
-                    const chunkTotal = secChunk.reduce((sum, sec) => sum + sec.monthly.slice(chunk.start, chunk.end + 1).reduce((a,b)=>a+b,0),0);
-                    monthlyTotalsRow.push(chunkTotal.toFixed(2));
-                    tableBody.push(monthlyTotalsRow);
-
-                    if (i > 0 || chunkIndex > 0) content.push({ text: '', pageBreak: 'before' });
-                    content.push({
-                        table: {
-                            headerRows: 1,
-                            widths: Array(headerRow.length).fill('*'),
-                            body: tableBody
-                        },
-                        layout: {
-                            hLineWidth: ()=>0.5,
-                            vLineWidth: ()=>0.5,
-                            hLineColor: ()=>'black',
-                            vLineColor: ()=>'black'
-                        },
-                        fontSize: 8
-                    });
+                    monthlyTotals.push(secChunk.reduce((sum, sec) => sum + sec.monthly.slice(chunk.start, chunk.end+1).reduce((a,b)=>a+b,0), 0).toFixed(2));
+                    body.push(monthlyTotals);
+                    if (i > 0 || ci > 0) content.push({ text: '', pageBreak: 'before' });
+                    content.push({ table: { headerRows: 1, widths: Array(header.length).fill('*'), body }, layout: 'lightHorizontalLines', fontSize: 8 });
                 }
             });
         }
 
-        // Helper to add section totals table
-        function addSectionTotals(sections, title) {
-            if (sections.length === 0) return;
+        function addTotals(sections, title) {
+            if (!sections.length) return;
             content.push({ text: '', pageBreak: 'before' });
-            content.push({ text: title, style: 'subheader', margin: [0, 10, 0, 5] });
-            const totalBody = [['Section Name', 'Yearly Total']];
+            content.push({ text: title, style: 'subheader', margin: [0,10,0,5] });
+            const body = [['Section Name', 'Yearly Total']];
             sections.forEach(sec => {
-                const yearly = sec.monthly.reduce((a,b)=>a+b,0).toFixed(2);
-                totalBody.push([sec.name, yearly]);
+                body.push([{ text: sec.name, bold: true }, sec.monthly.reduce((a,b)=>a+b,0).toFixed(2)]);
             });
-            totalBody.push(['GRAND TOTAL', sections.reduce((sum, sec) => sum + sec.monthly.reduce((a,b)=>a+b,0),0).toFixed(2)]);
-            content.push({
-                table: {
-                    headerRows: 1,
-                    widths: ['70%', '30%'],
-                    body: totalBody
-                },
-                layout: {
-                    hLineWidth: ()=>0.5,
-                    vLineWidth: ()=>0.5,
-                    hLineColor: ()=>'black',
-                    vLineColor: ()=>'black'
-                },
-                fontSize: 9
-            });
+            body.push(['GRAND TOTAL', sections.reduce((sum, sec) => sum + sec.monthly.reduce((a,b)=>a+b,0), 0).toFixed(2)]);
+            content.push({ table: { headerRows: 1, widths: ['70%', '30%'], body }, layout: 'lightHorizontalLines', fontSize: 9 });
         }
 
-        // Overall header
-        content.push(
-            { text: 'Investment Report', style: 'header', alignment: 'center', margin: [0,0,0,10] },
-            { text: `Year: ${year}    Budget (Manual/Earning): ${mainBudget.toFixed(2)}`, bold: true, margin: [0,0,0,5] }
-        );
+        content.push({ text: 'Investment Report', style: 'header', alignment: 'center', margin: [0,0,0,10] });
+        content.push({ text: `Year: ${year}    Budget (Total Earning): ${mainBudget.toFixed(2)}`, bold: true, margin: [0,0,0,5] });
 
-        // Earning tables and totals
-        addTablesForSections(earningSections, 'Earning Details');
-        addSectionTotals(earningSections, 'Earning Section-wise Totals');
+        addTables(earningSections, 'Earning Details');
+        addTotals(earningSections, 'Earning Section-wise Totals');
+        addTables(expenseSections, 'Expense Details');
+        addTotals(expenseSections, 'Expense Section-wise Totals');
 
-        // Expense tables and totals
-        addTablesForSections(expenseSections, 'Expense Details');
-        addSectionTotals(expenseSections, 'Expense Section-wise Totals');
-
-        // Overall summary
         content.push({ text: '', pageBreak: 'before' });
         content.push({ text: 'Overall Summary', style: 'header', alignment: 'center', margin: [0,0,0,10] });
-        const summaryBody = [
-            ['Description', 'Amount'],
-            ['Total Earning', totalEarning.toFixed(2)],
-            ['Total Expense', totalExpense.toFixed(2)],
-            ['Budget', mainBudget.toFixed(2)],
-            ['Remaining (Budget - Expense)', remaining.toFixed(2)],
-            ['Spent Percentage', status]
-        ];
         content.push({
             table: {
                 headerRows: 1,
                 widths: ['*', '*'],
-                body: summaryBody
+                body: [
+                    ['Description', 'Amount'],
+                    ['Total Earning', totalEarning.toFixed(2)],
+                    ['Total Expense', totalExpense.toFixed(2)],
+                    ['Budget (Earning)', mainBudget.toFixed(2)],
+                    ['Remaining (Earning - Expense)', remaining.toFixed(2)],
+                    ['Spent Percentage', status]
+                ]
             },
-            layout: {
-                hLineWidth: ()=>0.5,
-                vLineWidth: ()=>0.5,
-                hLineColor: ()=>'black',
-                vLineColor: ()=>'black'
-            },
+            layout: 'lightHorizontalLines',
             fontSize: 10
         });
 
-        const docDefinition = {
-            pageSize: 'A4',
-            pageOrientation: 'landscape',
-            pageMargins: [15, 20, 15, 20],
-            footer: function(currentPage, pageCount){
-                return { text: 'Page ' + currentPage + ' of ' + pageCount, alignment: 'center', margin:[0,10,0,0] };
-            },
-            content: content,
-            defaultStyle: { fontSize: 8 }
-        };
-
-        pdfMake.createPdf(docDefinition).download(`Investment_Report_${year}.pdf`);
+        pdfMake.createPdf({ pageSize: 'A4', pageOrientation: 'landscape', pageMargins: [15,20,15,20], content, defaultStyle: { fontSize: 8 } })
+            .download(`Investment_Report_${year}.pdf`);
     }
 
-    // Page load
+    // Initialization
     window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('runningYear').value = new Date().getFullYear();
         buildTables();
-        loadDefaultEarning();  // earning first
+        loadDefaultEarning();
         loadDefaultExpense();
 
-        document.getElementById('resultBtn').addEventListener('click', calculateAll);
+        document.getElementById('earningResultBtn').addEventListener('click', calculateEarningOnly);
+        document.getElementById('fullResultBtn').addEventListener('click', calculateAll);
         document.getElementById('pdfBtn').addEventListener('click', generatePDF);
-        document.getElementById('setBudgetFromEarnings').addEventListener('click', setBudgetFromEarnings);
-
+        document.getElementById('setBudgetFromEarnings').addEventListener('click', calculateAll); // just recalc
         document.getElementById('addEarningBtn').addEventListener('click', () => {
-            const inputField = document.getElementById('newEarningSection');
-            let newName = inputField.value.trim();
-            if (newName === '') newName = 'নতুন আয়';
-            addRow(earningTbody, newName, '');
-            inputField.value = '';
+            const val = document.getElementById('newEarningSection').value.trim() || 'নতুন আয়';
+            addRow(earningTbody, val, ''); document.getElementById('newEarningSection').value = '';
         });
-
         document.getElementById('addExpenseBtn').addEventListener('click', () => {
-            const inputField = document.getElementById('newExpenseSection');
-            let newName = inputField.value.trim();
-            if (newName === '') newName = 'নতুন খরচ';
-            addRow(expenseTbody, newName, '');
-            inputField.value = '';
+            const val = document.getElementById('newExpenseSection').value.trim() || 'নতুন খরচ';
+            addRow(expenseTbody, val, ''); document.getElementById('newExpenseSection').value = '';
         });
-
         document.getElementById('saveLocalBtn').addEventListener('click', saveToLocal);
-        document.getElementById('loadLocalBtn').addEventListener('click', loadFromLocal);
+        document.getElementById('resetBtn').addEventListener('click', hardReset);
 
         calculateAll();
     });
